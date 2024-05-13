@@ -10,17 +10,12 @@ class Bill extends Model
     use HasFactory;
     protected $fillable = [
         'idFactura',
-        'nombreVendedor',
         'idUsuario',
         'nomTienda',
-        'dirTienda',
-        'idContacto',
-        'idRes',
         'fechaEmision',
         'metodoPago',
-        'terYcon',
-        'costEnvio',
         'totalPagar',
+        'idDetalleFactura'
     ];
 
     protected $primaryKey = 'idFactura';
@@ -30,8 +25,7 @@ class Bill extends Model
     /**
      * Get the user that owns the invoice.
      */
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'idUsuario');
+    public function User(){
+        return $this->hasMany('App\Models\User');
     }
 }

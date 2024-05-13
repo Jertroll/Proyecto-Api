@@ -46,6 +46,6 @@ class User extends Authenticatable
     }
     public function Bill()
     {
-        return $this->hasMany(Bill::class, 'idUsuario');
+        return $this->hasMany('App\Models\Bill');
     }
 }

@@ -2,6 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BillController;
+
+
 /** Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum'); */
@@ -34,7 +37,9 @@ function(){
     //rutas especificas
 
     //rutas automaticas Restful
-    
+    Route::resource('/bill',BillController::class);
+
+
 }
 
 );
