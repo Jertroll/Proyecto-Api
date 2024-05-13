@@ -103,7 +103,7 @@ class UserController extends Controller
                 } else {
                     $rules = [
                         'nombre' => 'required',
-                        'apellidos' =>'required',
+                        'apellido' =>'required',
                         'telefono' =>'required',
                         'direccion'=>'required',
                         'cedula' =>'required',
