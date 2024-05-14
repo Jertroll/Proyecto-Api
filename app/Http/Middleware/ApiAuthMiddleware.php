@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Helpers\JwtAuth;
 
 class ApiAuthMiddleware
 {
@@ -15,6 +16,21 @@ class ApiAuthMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        return $next($request);
+        //Authorization
+        //Bearer
+        //Token
+
+        $jwt=new JwtAuth();
+        $token=$request->header('bearertoken');
+        $logged=$jwt->checkToken($token);
+        if($logged){
+            return $next($request);
+        }else{
+            $response=array(
+                'status'=>401,
+                'message'=>'No tiene privilegios para acceso al recurso'
+            );
+            return response()->json($response,401);
+        }
     }
 }
