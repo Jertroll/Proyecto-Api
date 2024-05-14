@@ -21,7 +21,7 @@ class ApiAuthMiddleware
         //Token
 
         $jwt=new JwtAuth();
-        $token=$request->header('bearertoken');
+        $token=$request->header('wtoolklefn');
         $logged=$jwt->checkToken($token);
         if($logged){
             return $next($request);
