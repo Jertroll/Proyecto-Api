@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Http\Response;
 use App\Models\User;
 use App\Models\Bill;
 use Illuminate\Http\Request;
+
+use App\Helpers\JwtAuth;
 
 
 class UserController extends Controller
@@ -174,6 +176,40 @@ class UserController extends Controller
          return response()->json($response,$response['status']);
      }
     
+     public function login(Request $request){
+        $data_input=$request->input('data',null);
+        $data=json_decode($data_input,true);
+        $data=array_map('trim',$data);
+        $rules=['email'=>'required','password'=>'required'];
+        $isValid=\validator($data,$rules);
+        if(!$isValid->fails()){
+            $jwt=new JwtAuth();
+            $response=$jwt->getToken($data['email'],$data['password']);
+            return response()->json($response);
+        }else{
+            $response=array(
+                'status'=>406,
+                'message'=>'Error en la validación de los datos',
+                'errors'=>$isValid->errors(),
+            );
+            return response()->json($response,406);
+        }
 
+    }
+
+
+     public function getIdentity(Request $request){
+        $jwt=new JwtAuth();
+        $token=$request->header('wtoolklefn');
+        if(isset($token)){
+            $response=$jwt->checkToken($token,true);
+        }else{
+            $response=array(
+                'status'=>404,
+                'message'=>'token (wtoolklefn) no encontrado',
+            );
+        }
+        return response()->json($response);
+    }
     
 }
