@@ -10,5 +10,8 @@ class Producto extends Model
     use HasFactory;
     protected $table='_productos';
     protected $fillable=['id,nombre,precio,descripcion,talla,estado,imagen'];
-
+    public function carrito(){
+        return $this->belongsToMany(Carrito::class, 'productoCarrito',  'carrito_id','producto_id');
+    }
+ 
 }

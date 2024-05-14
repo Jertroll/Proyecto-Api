@@ -54,4 +54,8 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Models\Bill');
     }
+    public function Carrito()
+    {
+        return $this->hasMany('App\Models\Carrito');
+    }
 }

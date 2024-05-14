@@ -22,7 +22,7 @@ class UserController extends Controller
     public function show($id){
         $data=User::find($id);
         if(is_object($data)){
-            $data=$data->load('user'); //No es user es otro en el que use la relacion
+            $data=$data->load('carrito'); //No es user es otro en el que use la relacion
             $response=array(
                 'status'=>200,
                 'message'=>'Datos de la categoria',
