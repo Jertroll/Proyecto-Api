@@ -31,8 +31,8 @@ return 'Eliminando un usuario';
 Route::prefix('v1')->group(
 function(){
     //rutas especificas
-    Route::get('/bill/{id}', [BillController::class, 'show']);
-    Route::delete('/bill/{id}', [BillController::class, 'destroy']);
+    Route::get('/bill/{bill}', [BillController::class, 'show']);
+    Route::delete('/bill/{bill}', [BillController::class, 'destroy']);
 
     //rutas automaticas Restful
     Route::resource('/bill',BillController::class,['except'=>['create','edit']]);
