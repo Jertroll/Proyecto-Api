@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoCarritoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\ApiAuthMiddleware; 
 
 Route::get('/User', function(){
 return 'Obteniendo lista de usuarios';
@@ -37,6 +38,8 @@ function(){
     Route::get('/bill/{bill}', [BillController::class, 'show']);
     Route::delete('/bill/{bill}', [BillController::class, 'destroy']);
 
+    Route::post('/user/login',[UserController::class,'login']);
+    Route::get('/user/getidentity',[UserController::class,'getIdentity'])->middleware(ApiAuthMiddleware::class);
     //rutas automaticas Restful
     Route::resource('/bill',BillController::class,['except'=>['create','edit']]);
     Route::resource('/producto',ProductoController::class,['except'=>['create','edit']]);

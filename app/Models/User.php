@@ -50,9 +50,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    public function Bill()
+    public function bill()
     {
-        return $this->hasMany('App\Models\Bill');
+        return $this->hasOne(Bill::class);
     }
     public function Carrito()
     {
