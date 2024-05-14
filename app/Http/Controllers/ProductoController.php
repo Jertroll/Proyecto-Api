@@ -30,7 +30,7 @@ class ProductoController extends Controller
             $data=json_decode($data_input,true);
             $data=array_map('trim',$data);
             $rules=[
-                'codigo'=>'required',
+                'id'=>'required',
                 'nombre'=>'required',
                 'precio'=>'required',
                 'descripcion'=>'required',
@@ -41,7 +41,7 @@ class ProductoController extends Controller
             $isValid=\validator($data,$rules);
             if(!$isValid->fails()){
                 $producto=new Producto();
-                $producto->codigo=$data['codigo'];
+                $producto->id=$data['id'];
                 $producto->nombre=$data['nombre'];
                 $producto->precio=$data['precio'];
                 $producto->descripcion=$data['descripcion'];
@@ -111,7 +111,7 @@ class ProductoController extends Controller
     }
     public function update(Request $request, $id)
     {
-            {
+           {
                 $dataInput = $request->input('data', null);
                 $data = json_decode($dataInput, true);
         
@@ -122,13 +122,13 @@ class ProductoController extends Controller
                     );
                 } else {
                     $rules = [
-                        'codigo' => 'required',
-                        'nombre' =>'required',
-                        'precio' =>'required',
+                        
+                        'nombre'=>'required',
+                        'precio'=>'required',
                         'descripcion'=>'required',
-                        'talla' =>'required',
+                        'talla'=>'required',
                         'estado'=>'required',
-                        'imagen'=>'required',
+                        'imagen'=>'required'
 
                     ];
         
@@ -145,7 +145,13 @@ class ProductoController extends Controller
                             $producto = Producto::find($id);
         
                             if ($producto) {
-                                $producto->update($data);
+                                $producto->nombre=$data['nombre'];
+                                $producto->precio=$data['precio'];
+                                $producto->descripcion=$data['descripcion'];
+                                $producto->talla=$data['talla'];
+                                $producto->estado=$data['estado'];
+                                $producto->imagen=$data['imagen'];
+                                $producto->save();
         
                                 $response = array(
                                     'status' => 200,
