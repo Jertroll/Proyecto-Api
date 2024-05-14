@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Bill;
+use App\Models\User;
 
 use App\Helpers\JwtAuth;
 
@@ -41,7 +42,7 @@ class BillController extends Controller
             'fechaEmision' => 'required',
             'metodoPago' => 'required',
             'totalPagar' => 'required',
-            'idDetalleFactura' => 'required',
+            'idCompra' => 'required',
         ]);
     
         if ($validator->fails()) {
@@ -51,12 +52,18 @@ class BillController extends Controller
         try {
             $bill = new Bill();
             $bill->fill($data);
+        
+            // Aquí obtienes el usuario asociado y lo guardas en el campo idUsuario
+            $user = User::findOrFail($data['idUsuario']);
+            $bill->user()->associate($user);
+        
             $bill->save();
-    
+        
             return response()->json(['status' => 201, 'message' => 'Factura creada', 'bill' => $bill], 201);
         } catch (\Exception $e) {
             return response()->json(['status' => 500, 'message' => 'Error al crear la factura: ' . $e->getMessage()], 500);
         }
+
     }
     
     public function destroy($id)
@@ -91,7 +98,7 @@ class BillController extends Controller
             'fechaEmision' => 'required',
             'metodoPago' => 'required',
             'totalPagar' => 'required',
-            'idDetalleFactura' => 'required',
+            'idCompra' => 'required',
         ]);
     
         if ($validator->fails()) {
@@ -112,5 +119,6 @@ class BillController extends Controller
             return response()->json(['status' => 500, 'message' => 'Error al actualizar la factura: ' . $e->getMessage()], 500);
         }
     }
+
     
 }
