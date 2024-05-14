@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('fechaEmision');
             $table->string('metodoPago');
             $table->decimal('totalPagar', 10, 2);
-            $table->integer('idDetalleFactura');
+            $table->integer('idCompra');
             $table->timestamps();
         });
     }

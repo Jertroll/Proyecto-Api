@@ -15,7 +15,7 @@ class Bill extends Model
         'fechaEmision',
         'metodoPago',
         'totalPagar',
-        'idDetalleFactura'
+        'idCompra'
     ];
 
     protected $primaryKey = 'idFactura';
@@ -25,7 +25,8 @@ class Bill extends Model
     /**
      * Get the user that owns the invoice.
      */
-    public function User(){
-        return $this->hasMany('App\Models\User');
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'idUsuario');
     }
 }
