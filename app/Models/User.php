@@ -58,4 +58,8 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Models\Carrito');
     }
+    public function compra()
+    {
+        return $this->hasMany(Compra::class, 'idUser');
+    }
 }

@@ -47,18 +47,20 @@ class CarritoController extends Controller
             });
             $rules=[
                 
-                'user_id'=>'required'
-
+                'user_id'=>'required',
+                '_productos.*.id' => 'required', // Asegúrate de que cada producto tenga un ID
+                '_productos.*.cantidad' => 'required|numeric|min:1', // Asegúrate de que cada producto tenga una cantidad válida
+    
             ];
             $isValid=\validator($data,$rules);
             if(!$isValid->fails()){
-                $idPro=[];
                 $carrito=new Carrito();
                 $carrito->user_id=$data['user_id'];
-                /*$jwt=new JwtAuth();
-                $carrito->user_id=$jwt->checkToken($request->header('bearertoken'),true)->iss;*/
                 if (isset($data['_productos']) && is_array($data['_productos'])) {
-                    $carrito->producto()->attach($data['_productos']);
+                    foreach($data['_productos'] as $producto) {
+                        // Adjunta cada producto al carrito con su cantidad respectiva
+                        $carrito->productos()->attach($producto['id'], ['cantidad' => $producto['cantidad']]);
+                    }
                 }
                 $carrito->save();
                 $response=array(
@@ -81,4 +83,5 @@ class CarritoController extends Controller
         }
         return response()->json($response,$response['status']);
     }
+    
 }
