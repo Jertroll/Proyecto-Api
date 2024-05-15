@@ -35,7 +35,7 @@ function(){
     Route::post('/user/login',[UserController::class,'login']);
     Route::get('/user/getidentity',[UserController::class,'getIdentity'])->middleware(ApiAuthMiddleware::class);
     //rutas automaticas Restful
-    Route::resource('/user',UserController::class,['except'=>['create','edit']]); //Se excluyen porque son obsolutas por temas de seguridad 
+    Route::resource('/user',UserController::class,['except'=>['create','edit']])->middleware(ApiAuthMiddleware::class); //Se excluyen porque son obsolutas por temas de seguridad 
 }
 
 );
