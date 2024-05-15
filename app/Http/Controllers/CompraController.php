@@ -53,9 +53,7 @@ class CompraController extends Controller
             'idCompra' => 'required',
             'idUsuario' => 'required',
             'idCarrito' => 'required',
-            'estadoCompra' => 'required',
-            // La validación de fecha y hora no es necesaria ya que las estableceremos automáticamente
-            'total' => 'required',
+            'estadoCompra' => 'required'
         ]);
         
         if ($validator->fails()) {
@@ -67,8 +65,8 @@ class CompraController extends Controller
             $compra->fill($data);
         
             // Asociar el usuario y el carrito
-            $compra->user_id = $data['idUsuario'];
-            $compra->carrito_id = $data['idCarrito'];
+            $compra->idUsuario = $data['idUsuario'];
+            $compra->idCarrito = $data['idCarrito'];
 
             $carrito = Carrito::findOrFail($data['idCarrito']);
             $compra->ListaProduc = $carrito->productos;
@@ -101,7 +99,6 @@ public function destroy($id)
         return response()->json(['status' => 500, 'message' => 'Error al eliminar la compra: ' . $e->getMessage()], 500);
     }
 }
-
 public function update(Request $request, $id)
 {
     $data = $request->input('data', null);
@@ -112,11 +109,7 @@ public function update(Request $request, $id)
     
     $data = json_decode($data, true);
     $validator = \Validator::make($data, [
-        'idCompra' => 'required',
-        'idUsuario' => 'required',
-        'idCarrito' => 'required',
         'estadoCompra' => 'required',
-        'total' => 'required',
     ]);
     
     if ($validator->fails()) {
@@ -129,23 +122,19 @@ public function update(Request $request, $id)
             return response()->json(['status' => 404, 'message' => 'Compra no encontrada'], 404);
         }
         
-        $compra->fill($data);
-
-        // Asociar el usuario y el carrito
-        $compra->user_id = $data['idUsuario'];
-        $compra->carrito_id = $data['idCarrito'];
-
-        $carrito = Carrito::findOrFail($data['idCarrito']);
-        $compra->ListaProduc = $carrito->productos;
-
-        // No actualizamos la fecha y la hora ya que son campos de solo lectura
+        $compra->estadoCompra = $data['estadoCompra'];
         
         $compra->save();
 
-        return response()->json(['status' => 200, 'message' => 'Compra actualizada', 'compra' => $compra], 200);
+        return response()->json([
+            'status' => 200,
+            'message' => 'Compra actualizada',
+            'estadoCompra' => $compra->estadoCompra,
+        ], 200);
     } catch (\Exception $e) {
         return response()->json(['status' => 500, 'message' => 'Error al actualizar la compra: ' . $e->getMessage()], 500);
     }
 }
+
 
 }

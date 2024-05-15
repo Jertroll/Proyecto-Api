@@ -60,6 +60,6 @@ class User extends Authenticatable
     }
     public function compra()
     {
-        return $this->hasMany(Compra::class, 'idUser');
+        return $this->hasMany(Compra::class, 'idUsuario');
     }
 }

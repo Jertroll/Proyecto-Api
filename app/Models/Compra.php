@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Compra extends Model
 {
     use HasFactory;
+    protected $table='compra';
+
     protected $fillable = [
         'idCompra',
         'idUsuario',
@@ -16,7 +18,6 @@ class Compra extends Model
         'estadoCompra',
         'fecha',
         'hora',
-        'total',
     ];
 
     protected $primaryKey = 'idCompra';

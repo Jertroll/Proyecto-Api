@@ -19,7 +19,7 @@ class Carrito extends Model
         return $this->belongsToMany(Producto::class, 'producto_carrito', 'carrito_id', 'producto_id')
                     ->withPivot('cantidad'); // Incluir la cantidad de cada producto en el carrito
     }
-    public function compras()
+    public function compra()
     {
         return $this->hasMany(Compra::class, 'idCarrito');
     }
