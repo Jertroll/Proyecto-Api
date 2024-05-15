@@ -46,7 +46,8 @@ class CompraController extends Controller
     ]);
     
     if ($validator->fails()) {
-        return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' => $validator->errors()], 406);
+        return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' 
+        =>$validator->errors()], 406);
     }
     
     try {
