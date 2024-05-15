@@ -186,40 +186,39 @@ class CarritoController extends Controller
     }
 
     public function addProductToCart(Request $request, $id)
-{
-    $dataInput = $request->input('data', null);
-    $data = json_decode($dataInput, true);
-
-    if (empty($data)) {
-        $response = [
-            'status' => 400,
-            'message' => 'Datos no proporcionados o incorrectos',
-        ];
-    } else {
+    {
+        $producto_id = $request->input('producto_id');
+        $cantidad = $request->input('cantidad');
+    
+        // Validar los datos
         $rules = [
-            'producto_id' => 'required|numeric', // Cambia 'producto_id' por el nombre correcto del campo que identifica el producto a agregar
+            'producto_id' => 'required|numeric', // Ajusta el nombre del campo según tu necesidad
             'cantidad' => 'required|numeric|min:1',
         ];
-
-        $valid = \validator($data, $rules);
-
-        if ($valid->fails()) {
+    
+        $validator = \validator($request->all(), $rules);
+    
+        if ($validator->fails()) {
+            // Si la validación falla, retorna un mensaje de error
             $response = [
                 'status' => 406,
                 'message' => 'Datos enviados no cumplen con las reglas establecidas',
-                'errors' => $valid->errors(),
+                'errors' => $validator->errors(),
             ];
         } else {
             // Buscar el carrito por su ID
             $carrito = Carrito::find($id);
-
-            if ($carrito) {
+    
+            if (!$carrito) {
+                // Si el carrito no existe, retorna un mensaje de error
+                $response = [
+                    'status' => 404,
+                    'message' => 'El carrito no existe',
+                ];
+            } else {
                 // Verificar si el producto ya está en el carrito
-                $producto_id = $data['producto_id'];
-                $cantidad = $data['cantidad'];
-
                 $productoExistente = $carrito->productos()->where('producto_id', $producto_id)->first();
-
+    
                 if ($productoExistente) {
                     // Si el producto ya está en el carrito, actualizar la cantidad
                     $productoExistente->pivot->cantidad += $cantidad;
@@ -228,22 +227,18 @@ class CarritoController extends Controller
                     // Si el producto no está en el carrito, agregarlo con la cantidad especificada
                     $carrito->productos()->attach($producto_id, ['cantidad' => $cantidad]);
                 }
-
+    
+                // Respuesta de éxito
                 $response = [
                     'status' => 200,
                     'message' => 'Producto agregado al carrito satisfactoriamente',
                 ];
-            } else {
-                $response = [
-                    'status' => 404,
-                    'message' => 'El carrito no existe',
-                ];
             }
         }
+    
+        return response()->json($response, $response['status']);
     }
-
-    return response()->json($response, $response['status']);
-}
+    
 
 
 }

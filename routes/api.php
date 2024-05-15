@@ -38,7 +38,7 @@ function(){
     Route::get('/bill/{bill}', [BillController::class, 'show']);
     Route::delete('/bill/{bill}', [BillController::class, 'destroy']);
 
-    Route::post('/carritos/{id}/addProductToCart', [CarritoController::class, 'addProductToCart']);
+  Route::post('/carrito/{id}/addProductToCart', [CarritoController::class, 'addProductToCart']); // Agregar producto al carrito
 
     Route::post('/user/login',[UserController::class,'login']);
     Route::get('/user/getidentity',[UserController::class,'getIdentity'])->middleware(ApiAuthMiddleware::class);
