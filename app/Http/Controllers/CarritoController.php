@@ -38,13 +38,13 @@ class CarritoController extends Controller
         }
         return response()->json($response,$response['status']);
     }
-    public function store(Request $request)
-{
+
+    public function store(Request $request){
     $data = $request->input('data', null);
 
     if ($data) {
-        array_walk_recursive($data, function (&$value) {
-            $value = trim($value);
+        array_walk_recursive($data, function (&$value) { //recorre el data 
+            $value = trim($value); // elimina los espacios en blanco trim
         });
 
         $rules = [
@@ -52,9 +52,9 @@ class CarritoController extends Controller
             '_productos.*.id' => 'required',
             '_productos.*.cantidad' => 'required|numeric|min:1',
         ];
-
+        //Validar reglas 
         $isValid = \validator($data, $rules);
-
+        //  Creacion del carrito
         if (!$isValid->fails()) {
             $carrito = new Carrito();
             $carrito->user_id = $data['user_id'];
@@ -184,4 +184,66 @@ class CarritoController extends Controller
                 return response()->json($response, $response['status']);
         }
     }
+
+    public function addProductToCart(Request $request, $id)
+{
+    $dataInput = $request->input('data', null);
+    $data = json_decode($dataInput, true);
+
+    if (empty($data)) {
+        $response = [
+            'status' => 400,
+            'message' => 'Datos no proporcionados o incorrectos',
+        ];
+    } else {
+        $rules = [
+            'producto_id' => 'required|numeric', // Cambia 'producto_id' por el nombre correcto del campo que identifica el producto a agregar
+            'cantidad' => 'required|numeric|min:1',
+        ];
+
+        $valid = \validator($data, $rules);
+
+        if ($valid->fails()) {
+            $response = [
+                'status' => 406,
+                'message' => 'Datos enviados no cumplen con las reglas establecidas',
+                'errors' => $valid->errors(),
+            ];
+        } else {
+            // Buscar el carrito por su ID
+            $carrito = Carrito::find($id);
+
+            if ($carrito) {
+                // Verificar si el producto ya está en el carrito
+                $producto_id = $data['producto_id'];
+                $cantidad = $data['cantidad'];
+
+                $productoExistente = $carrito->productos()->where('producto_id', $producto_id)->first();
+
+                if ($productoExistente) {
+                    // Si el producto ya está en el carrito, actualizar la cantidad
+                    $productoExistente->pivot->cantidad += $cantidad;
+                    $productoExistente->pivot->save();
+                } else {
+                    // Si el producto no está en el carrito, agregarlo con la cantidad especificada
+                    $carrito->productos()->attach($producto_id, ['cantidad' => $cantidad]);
+                }
+
+                $response = [
+                    'status' => 200,
+                    'message' => 'Producto agregado al carrito satisfactoriamente',
+                ];
+            } else {
+                $response = [
+                    'status' => 404,
+                    'message' => 'El carrito no existe',
+                ];
+            }
+        }
+    }
+
+    return response()->json($response, $response['status']);
+}
+
+
 }
