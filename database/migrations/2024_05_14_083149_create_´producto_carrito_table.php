@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('producto_carrito', function (Blueprint $table) {
 
             $table->id(); 
+            $table->integer('cantidad');
             
             $table->unsignedBigInteger('producto_id');
             $table->unsignedBigInteger('carrito_id');
