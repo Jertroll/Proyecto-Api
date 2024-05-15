@@ -38,7 +38,9 @@ function(){
     Route::get('/bill/{bill}', [BillController::class, 'show']);
     Route::delete('/bill/{bill}', [BillController::class, 'destroy']);
 
-  Route::post('/carrito/{id}/addProductToCart', [CarritoController::class, 'addProductToCart']); // Agregar producto al carrito
+    Route::post('/carrito/{id}/addProductToCart', [CarritoController::class, 'addProductToCart']); // Agregar producto al carrito
+    Route::post('/carrito/{id}/removeProductFromCart', [CarritoController::class, 'removeProductFromCart']); //Elimina 1 producto de un carrito ya existente
+
 
     Route::post('/user/login',[UserController::class,'login']);
     Route::get('/user/getidentity',[UserController::class,'getIdentity'])->middleware(ApiAuthMiddleware::class);
