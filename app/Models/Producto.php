@@ -12,8 +12,8 @@ class Producto extends Model
     protected $fillable=['id,nombre,precio,descripcion,talla,estado,imagen'];
     
     public function carrito(){
-        return $this->belongsToMany(Carrito::class, 'producto_carrito',  'carrito_id','producto_id')
-        ;
+        return $this->belongsToMany(Carrito::class, 'producto_carrito', 'producto_id', 'carrito_id')
+                    ->withPivot('cantidad'); // Incluir la cantidad de cada producto en el carrito
     }
  
 }
