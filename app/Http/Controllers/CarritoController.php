@@ -24,22 +24,26 @@ class CarritoController extends Controller
     }
     
     public function show($id){
-        $data=Carrito::find($id);
-        if(is_object($data)){
-            $data=$data->load('user','productos');
-            $response=array(
-                'status'=>200,
-                'message'=>'Datos del carrito',
-                'data'=>$data,
-            );
-        }else{
-            $response=array(
-                'status'=>404,
-                'message'=>'Recurso no encontrado',
-            );
+        $carrito = Carrito::find($id);
+        
+        if($carrito){
+            $carrito->load('productos'); // Carga los productos directamente a través de la relación
+    
+            $response = [
+                'status' => 200,
+                'message' => 'Datos del carrito',
+                'data' => $carrito,
+            ];
+        } else {
+            $response = [
+                'status' => 404,
+                'message' => 'Recurso no encontrado',
+            ];
         }
-        return response()->json($response,$response['status']);
+        
+        return response()->json($response, $response['status']);
     }
+    
     public function store(Request $request){
         $data = $request->input('data', null);
     
