@@ -38,6 +38,8 @@ function(){
     Route::get('/bill/{bill}', [BillController::class, 'show']);
     Route::delete('/bill/{bill}', [BillController::class, 'destroy']);
 
+    Route::get('/carrito/index', [CarritoController::class, 'index']);
+
     Route::post('/user/login',[UserController::class,'login']);
     Route::get('/user/getidentity',[UserController::class,'getIdentity'])->middleware(ApiAuthMiddleware::class);
     //rutas automaticas Restful
