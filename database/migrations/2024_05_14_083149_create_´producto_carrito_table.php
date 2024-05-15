@@ -17,7 +17,7 @@ return new class extends Migration
             $table->integer('cantidad');
             
             $table->integer('producto_id');
-            $table->integer('carrito_id');
+            $table->bigInteger('carrito_id');
 
             $table->foreign('producto_id')->references('id')->on('_productos');
             $table->foreign('carrito_id')->references('id')->on('carritos');
