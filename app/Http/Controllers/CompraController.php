@@ -70,7 +70,6 @@ class CompraController extends Controller
             // Asociar el usuario y el carrito
             $compra->idUsuario = $data['idUsuario'];
             $compra->idCarrito = $data['idCarrito'];
-
             $carrito = Carrito::findOrFail($data['idCarrito']);
             $compra->ListaProduc = $carrito->productos;
         
@@ -79,7 +78,7 @@ class CompraController extends Controller
             $compra->hora = date('H:i:s');
         
             $compra->save();
-            $carrito->productos()->detach();
+           /* $carrito->productos()->detach();*/
             
             return response()->json(['status' => 201, 'message' => 'Compra creada', 'compra' => $compra], 201);
             
@@ -143,6 +142,36 @@ public function update(Request $request, $id)
     } catch (\Exception $e) {
         return response()->json(['status' => 500, 'message' => 'Error al actualizar la compra: ' . $e->getMessage()], 500);
     }
+}
+
+public function calcularTotal($idCompra)
+{
+    // Buscar la compra por su ID
+    $compra = Compra::find($idCompra);
+
+    // Verificar si se encontró la compra
+    if (!$compra) {
+        // Si no se encuentra la compra, retornar null o lanzar una excepción, dependiendo del caso
+        // Aquí, por simplicidad, se retornará null
+        return null;
+    }
+
+    // Obtener los productos del carrito asociado a la compra
+    $productos = $compra->carrito->productos;
+
+    // Inicializar el total
+    $total = 0;
+
+    // Iterar sobre los productos y calcular el subtotal
+    foreach ($productos as $producto) {
+        $precio = $producto->precio;
+        $cantidad = $producto->pivot->cantidad;
+        $subtotal = $precio * $cantidad;
+        $total += $subtotal;
+    }
+
+    // Retornar el total calculado
+    return $total;
 }
 
 

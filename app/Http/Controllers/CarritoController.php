@@ -292,5 +292,6 @@ class CarritoController extends Controller
                 return response()->json(['status' => 500, 'message' => 'Error al vaciar el carrito: ' . $e->getMessage()], 500);
             }
         }
+
 }
 

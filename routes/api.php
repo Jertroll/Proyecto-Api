@@ -50,6 +50,8 @@ function(){
     Route::post('/user/login',[UserController::class,'login']);
     Route::get('/user/getidentity',[UserController::class,'getIdentity'])->middleware(ApiAuthMiddleware::class);
   
+    //compra
+    Route::post('/compra/calcularTotal',[CompraController::class,'calcularTotal']);
   
     //rutas automaticas Restful
 
