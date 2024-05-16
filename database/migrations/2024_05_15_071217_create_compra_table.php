@@ -12,14 +12,14 @@ return new class extends Migration
     public function up()
     {
         Schema::create('compra', function (Blueprint $table) {
-            $table->string('idCompra')->primary();
+            $table->BigInteger('idCompra')->primary();
             $table->unsignedBigInteger('idUsuario');
             $table->unsignedBigInteger('idCarrito');
             $table->text('ListaProduc');
             $table->string('estadoCompra');
             $table->date('fecha');
             $table->time('hora');
-            $table->decimal('total', 10, 2);
+            $table->integer('total');
             
             // Claves foráneas
             $table->foreign('idUsuario')->references('id')->on('users')->onDelete('cascade');
