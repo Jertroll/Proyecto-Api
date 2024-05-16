@@ -50,6 +50,11 @@ function(){
     Route::post('/user/login',[UserController::class,'login']);
     Route::get('/user/getidentity',[UserController::class,'getIdentity'])->middleware(ApiAuthMiddleware::class);
   
+    //Producto
+    Route::post('/producto/upload',[ProductoController::class,'uploadImage']);
+    Route::get('/producto/getimage/{filename}',[ProductoController::class,'getImage']);
+
+
     //compra
     Route::post('/compra/calcularTotal',[CompraController::class,'calcularTotal']);
   

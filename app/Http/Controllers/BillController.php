@@ -110,9 +110,8 @@ class BillController extends Controller
         $data = json_decode($data, true);
         $validator = \Validator::make($data, [
             'nomTienda' => 'required',
-            'fechaEmision' => 'required',
             'metodoPago' => 'required',
-            'totalPagar' => 'required',
+            
         ]);
     
         if ($validator->fails()) {

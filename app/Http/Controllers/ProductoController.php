@@ -176,7 +176,46 @@ class ProductoController extends Controller
                 return response()->json($response, $response['status']);
         }
     }
-
+    public function uploadImage(Request $request){
+        $isValid=\Validator::make($request->all(),['file0'=>'required|image|mimes:jpg,png,jpeg,svg']);
+        if(!$isValid->fails()){
+            $image=$request->file('file0');
+            $filename=\Str::uuid().".".$image->getClientOriginalExtension();
+            \Storage::disk('productos')->put($filename,\File::get($image));
+            $response=array(
+                'status'=>201,
+                'message'=>'Imagen guardada',
+                'filename'=>$filename,
+            );
+        }else{
+            $response=array(
+                'status'=>406,
+                'message'=>'Error: no se encontro el archivo',
+                'errors'=>$isValid->errors(),
+            );
+        }
+        return response()->json($response,$response['status']);
+    }
+    public function getImage($filename){
+        if(isset($filename)){
+            $exist=\Storage::disk('productos')->exists($filename);
+            if($exist){
+                $file=\Storage::disk('productos')->get($filename);
+                return new Response($file,200);
+            }else{
+                $response=array(
+                    'status'=>404,
+                    'message'=>'Imagen no existe',
+                );
+            }
+        }else{
+            $response=array(
+                'status'=>406,
+                'message'=>'No se definió el nombre de la imagen',
+            );
+        }
+        return response()->json($response,$response['status']);
+    }
 
 
 }
