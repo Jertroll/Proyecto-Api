@@ -48,7 +48,9 @@ class CompraController extends Controller
             return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
         }
         
-        $data = json_decode($data, true);
+        $jsonString = '{"key": "value"}';
+        $array = json_decode($jsonString, true);
+
         $validator = \Validator::make($data, [
             'idCompra' => 'required',
             'idUsuario' => 'required',
@@ -109,11 +111,9 @@ public function update(Request $request, $id)
         return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
     }
     
-    $data = json_decode($data, true);
+    $jsonString = '{"key": "value"}';
+    $array = json_decode($jsonString, true);
     $validator = \Validator::make($data, [
-        'idCompra' => 'required',
-        'idUsuario' => 'required',
-        'idCarrito' => 'required',
         'estadoCompra' => 'required',
         'total' => 'required',
     ]);
@@ -128,23 +128,21 @@ public function update(Request $request, $id)
             return response()->json(['status' => 404, 'message' => 'Compra no encontrada'], 404);
         }
         
-        $compra->fill($data);
-
-        // Asociar el usuario y el carrito
-        $compra->idUsuario = $data['idUsuario'];
-        $compra->idCarrito = $data['idCarrito'];
-
-        $carrito = Carrito::findOrFail($data['idCarrito']);
-        $compra->ListaProduc = $carrito->productos;
-
-        // No actualizamos la fecha y la hora ya que son campos de solo lectura
+        $compra->estadoCompra = $data['estadoCompra'];
+        $compra->total = $data['total'];
         
         $compra->save();
 
-        return response()->json(['status' => 200, 'message' => 'Compra actualizada', 'compra' => $compra], 200);
+        return response()->json([
+            'status' => 200,
+            'message' => 'Compra actualizada',
+            'estadoCompra' => $compra->estadoCompra,
+            'total' => $compra->total
+        ], 200);
     } catch (\Exception $e) {
         return response()->json(['status' => 500, 'message' => 'Error al actualizar la compra: ' . $e->getMessage()], 500);
     }
 }
+
 
 }

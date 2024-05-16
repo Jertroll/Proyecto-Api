@@ -76,7 +76,7 @@ class CarritoController extends Controller
                     
                 }
     
-                /$carrito->save();/
+                $carrito->save();
     
                 $response = [
                     'status' => 201,
