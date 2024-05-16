@@ -92,13 +92,7 @@ public function update(Request $request, $id)
     
     $data = json_decode($data, true);
     $validator = \Validator::make($data, [
-        'idCompra' => 'required',
-        'idUsuario' => 'required',
-        'idCarrito' => 'required',
-        'ListaProduc' => 'required',
         'estadoCompra' => 'required',
-        'fecha' => 'required',
-        'hora' => 'required',
         'total' => 'required',
     ]);
     
@@ -111,8 +105,10 @@ public function update(Request $request, $id)
         if (!$compra) {
             return response()->json(['status' => 404, 'message' => 'Compra no encontrada'], 404);
         }
-
-        $compra->fill($data);
+        
+        $compra->estadoCompra = $data['estadoCompra'];
+        $compra->total = $data['total'];
+        
         $compra->save();
 
         return response()->json(['status' => 200, 'message' => 'Compra actualizada', 'compra' => $compra], 200);

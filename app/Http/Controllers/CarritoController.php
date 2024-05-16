@@ -76,8 +76,6 @@ class CarritoController extends Controller
                     
                 }
     
-                /*$carrito->save();*/
-    
                 $response = [
                     'status' => 201,
                     'message' => 'Carrito creado',
@@ -96,7 +94,8 @@ class CarritoController extends Controller
                 'message' => 'No se encontró el objeto data'
             ];
         }
-        return response()->json($response,$response['status']);
+    
+        return response()->json($response, $response['status']);
     }
     public function destroy($id){
         if(isset($id)){
