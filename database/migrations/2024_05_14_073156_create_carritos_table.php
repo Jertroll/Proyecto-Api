@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('carritos', function (Blueprint $table) {
 
-            $table->unsignedBigInteger('id')->primary(); 
+            $table->unsignedBigInteger('id')->primary()->autoIncrement();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); 
             $table->timestamps(); 
         
