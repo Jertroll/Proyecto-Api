@@ -39,6 +39,7 @@ class JwtAuth{
         }
         return $data;
     }
+
     public function checkToken($jwt,$getId=false){
         $authFlag=false;
         if(isset($jwt)){
@@ -58,4 +59,5 @@ class JwtAuth{
         }
         return $authFlag;
     }
+    
 }
