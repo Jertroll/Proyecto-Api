@@ -73,7 +73,16 @@ class CompraController extends Controller
 
             $carrito = Carrito::findOrFail($data['idCarrito']);
             $compra->ListaProduc = $carrito->productos;
-        
+            $jsonString = "{\"id\":1,\"nombre\":\"Camiseta\",\"precio\":20,\"descripcion\":\"Camiseta de algodón\",\"talla\":\"M\",\"estado\":\"disponible\",\"imagen\":\"camiseta.jpg\",\"created_at\":\"2024-05-15T02:45:19.000000Z\",\"updated_at\":\"2024-05-15T02:45:19.000000Z\",\"pivot\":{\"carrito_id\":1,\"producto_id\":1,\"cantidad\":2}},{\"id\":4,\"nombre\":\"Vestido\",\"precio\":40,\"descripcion\":\"Vestido elegante\",\"talla\":\"S\",\"estado\":\"disponible\",\"imagen\":\"vestido.jpg\",\"created_at\":\"2024-05-15T02:45:19.000000Z\",\"updated_at\":\"2024-05-15T02:45:19.000000Z\",\"pivot\":{\"carrito_id\":1,\"producto_id\":4,\"cantidad\":6}}";
+
+            // Elimina los caracteres de escape (\)
+            $jsonString = stripslashes($jsonString);
+            
+            // Decodifica la cadena JSON
+            $data = json_decode($jsonString, true);
+            
+            // Ahora, $data contendrá un array de objetos
+            
             // Establecer la fecha y la hora automáticamente
             $compra->fecha = date('Y-m-d');
             $compra->hora = date('H:i:s');

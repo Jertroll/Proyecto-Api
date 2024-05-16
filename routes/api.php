@@ -6,6 +6,7 @@ use App\Http\Controllers\CarritoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ProductoCarritoController;
+use App\Http\Controllers\DetalleFacturaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\ApiAuthMiddleware; 
@@ -57,6 +58,7 @@ function(){
     Route::resource('/bill',BillController::class,['except'=>['create','edit']]);
     Route::resource('/producto',ProductoController::class,['except'=>['create','edit']]);
     Route::resource('/carrito',CarritoController::class,['except'=>['create','edit']]);
+    Route::resource('/detalleFactura',DetalleFacturaController::class);
 }
 
 );

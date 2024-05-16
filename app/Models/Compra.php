@@ -34,4 +34,9 @@ class Compra extends Model
         return $this->belongsTo(Carrito::class, 'idCarrito');
     }
 
+    public function compra()
+    {
+        return $this->belongsTo(Compra::class, 'idCompra');
+    }
+
 }

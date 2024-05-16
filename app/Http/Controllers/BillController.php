@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\Bill;
 use App\Models\User;
-
+use App\Models\Compra;
 use App\Helpers\JwtAuth;
+
+
 
 class BillController extends Controller
 {
@@ -15,15 +17,6 @@ class BillController extends Controller
     {
         $facturas = Bill::all();
         return response()->json($facturas);
-    }
-
-    public function show($id)
-    {
-        $factura = Bill::find($id);
-        if (!$factura) {
-            return response()->json(['message' => 'Factura no encontrada'], 404);
-        }
-        return response()->json($factura);
     }
 
     public function store(Request $request)
@@ -56,6 +49,8 @@ class BillController extends Controller
             // Aquí obtienes el usuario asociado y lo guardas en el campo idUsuario
             $user = User::findOrFail($data['idUsuario']);
             $bill->user()->associate($user);
+            $compra = Compra::findOrFail($data['idCompra']);
+            $bill->compra()->associate($compra);
         
             $bill->save();
         
@@ -64,7 +59,7 @@ class BillController extends Controller
             return response()->json(['status' => 500, 'message' => 'Error al crear la factura: ' . $e->getMessage()], 500);
         }
 
-    }
+    } 
     
     public function destroy($id)
 {
