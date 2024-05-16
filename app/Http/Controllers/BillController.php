@@ -7,9 +7,9 @@ use Illuminate\Http\Response;
 use App\Models\Bill;
 use App\Models\User;
 use App\Models\Compra;
-
-
 use App\Helpers\JwtAuth;
+
+
 
 class BillController extends Controller
 {
@@ -19,22 +19,47 @@ class BillController extends Controller
         return response()->json($facturas);
     }
 
-    public function show($id)
-    {
-        $factura = Bill::find($id);
-        if (!$factura) {
-            return response()->json(['message' => 'Factura no encontrada'], 404);
-        }
-        return response()->json($factura);
-    }
-
     public function store(Request $request)
 {
     $data = $request->input('data', null);
     
-    if (!$data) {
-        return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
-    }
+        if (!$data) {
+            return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
+        }
+    
+        $data = json_decode($data, true);
+        $validator = \Validator::make($data, [
+            'idFactura' => 'required',
+            'idUsuario' => 'required',
+            'nomTienda' => 'required',
+            'fechaEmision' => 'required',
+            'metodoPago' => 'required',
+            'totalPagar' => 'required',
+            'idCompra' => 'required',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' => $validator->errors()], 406);
+        }
+    
+        try {
+            $bill = new Bill();
+            $bill->fill($data);
+        
+            // Aquí obtienes el usuario asociado y lo guardas en el campo idUsuario
+            $user = User::findOrFail($data['idUsuario']);
+            $bill->user()->associate($user);
+            $compra = Compra::findOrFail($data['idCompra']);
+            $bill->compra()->associate($compra);
+        
+            $bill->save();
+        
+            return response()->json(['status' => 201, 'message' => 'Factura creada', 'bill' => $bill], 201);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 500, 'message' => 'Error al crear la factura: ' . $e->getMessage()], 500);
+        }
+
+    } 
     
     $data = json_decode($data, true);
     $validator = \Validator::make($data, [
