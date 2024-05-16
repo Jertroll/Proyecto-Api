@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('estadoCompra');
             $table->date('fecha');
             $table->time('hora');
-            $table->integer('total');
             
             // Claves foráneas
             $table->foreign('idUsuario')->references('id')->on('users')->onDelete('cascade');
