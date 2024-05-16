@@ -18,7 +18,6 @@ class Compra extends Model
         'estadoCompra',
         'fecha',
         'hora',
-        'total',
     ];
 
     protected $primaryKey = 'idCompra';

@@ -12,7 +12,7 @@ class Carrito extends Model
     protected $fillable=['idCarrito,_productos,cantidad,user_id'];
 
     public function user(){
-        return $this->belongsTo(Producto::class,'user_id');
+        return $this->belongsTo(User::class,'user_id');
     }
 
     public function productos(){

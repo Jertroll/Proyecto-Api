@@ -44,6 +44,7 @@ function(){
     //Carrito
     Route::post('/carrito/{id}/addProductToCart', [CarritoController::class, 'addProductToCart']); // Agregar producto al carrito
     Route::post('/carrito/{id}/removeProductFromCart', [CarritoController::class, 'removeProductFromCart']); //Elimina 1 producto de un carrito ya existente
+    Route::post('/carrito/{id}/vaciarCarrito', [CarritoController::class, 'vaciarCarrito']);
 
     //Usuario
     Route::post('/user/login',[UserController::class,'login']);

@@ -276,5 +276,21 @@ class CarritoController extends Controller
             return response()->json($response, $response['status']);
         }
     
-
+        public function vaciarCarrito(Request $request, $id)
+        {
+            try {
+                $carrito = Carrito::find($id);
+                if (!$carrito) {
+                    return response()->json(['status' => 404, 'message' => 'Carrito no encontrado'], 404);
+                }
+        
+                // Eliminar todos los productos asociados al carrito
+                $carrito->productos()->detach();
+        
+                return response()->json(['status' => 200, 'message' => 'Carrito vaciado con éxito'], 200);
+            } catch (\Exception $e) {
+                return response()->json(['status' => 500, 'message' => 'Error al vaciar el carrito: ' . $e->getMessage()], 500);
+            }
+        }
 }
+

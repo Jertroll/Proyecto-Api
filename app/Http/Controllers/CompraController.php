@@ -56,7 +56,7 @@ class CompraController extends Controller
             'idUsuario' => 'required',
             'idCarrito' => 'required',
             'estadoCompra' => 'required',
-            'total' => 'required',
+            
         ]);
         
         if ($validator->fails()) {
@@ -79,8 +79,10 @@ class CompraController extends Controller
             $compra->hora = date('H:i:s');
         
             $compra->save();
-        
+            $carrito->productos()->detach();
+            
             return response()->json(['status' => 201, 'message' => 'Compra creada', 'compra' => $compra], 201);
+            
         } catch (\Exception $e) {
             return response()->json(['status' => 500, 'message' => 'Error al crear la compra: ' . $e->getMessage()], 500);
         }
@@ -115,7 +117,7 @@ public function update(Request $request, $id)
     $array = json_decode($jsonString, true);
     $validator = \Validator::make($data, [
         'estadoCompra' => 'required',
-        'total' => 'required',
+       
     ]);
     
     if ($validator->fails()) {
@@ -129,7 +131,7 @@ public function update(Request $request, $id)
         }
         
         $compra->estadoCompra = $data['estadoCompra'];
-        $compra->total = $data['total'];
+       
         
         $compra->save();
 
@@ -137,7 +139,6 @@ public function update(Request $request, $id)
             'status' => 200,
             'message' => 'Compra actualizada',
             'estadoCompra' => $compra->estadoCompra,
-            'total' => $compra->total
         ], 200);
     } catch (\Exception $e) {
         return response()->json(['status' => 500, 'message' => 'Error al actualizar la compra: ' . $e->getMessage()], 500);
