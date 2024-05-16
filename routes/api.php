@@ -66,7 +66,7 @@ function(){
     Route::resource('/bill',BillController::class,['except'=>['create','edit']]);
     Route::resource('/producto',ProductoController::class,['except'=>['create','edit']]);
     Route::resource('/carrito',CarritoController::class,['except'=>['create','edit']]);
-    Route::resource('/detalleFactura',DetalleFacturaController::class);
+    Route::resource('/detalleFactura',DetalleFacturaController::class,['except'=>['create','edit']]);
 }
 
 );

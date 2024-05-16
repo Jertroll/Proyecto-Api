@@ -12,7 +12,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('compra', function (Blueprint $table) {
-            $table->BigInteger('idCompra')->primary();
+            $table->unsignedBigInteger('idCompra')->primary()->autoIncrement();
             $table->unsignedBigInteger('idUsuario');
             $table->unsignedBigInteger('idCarrito');
             $table->text('ListaProduc');

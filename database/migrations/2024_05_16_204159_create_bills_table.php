@@ -12,13 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bills', function (Blueprint $table) {
-            $table->string('idFactura')->primary();
-            $table->integer('idUsuario');
+            $table->unsignedBigInteger('id')->primary();
+            $table->unsignedBigInteger('idUsuario');
             $table->string('nomTienda');
             $table->date('fechaEmision');
             $table->string('metodoPago');
-            $table->decimal('totalPagar', 10, 2);
-            $table->integer('idCompra');
+            $table->integer('total');
+            $table->unsignedBigInteger('idCompra');
+            //llaves foraneas
+            $table->foreign('idUsuario')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('idCompra')->references('idCompra')->on('compra')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -28,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('bill');
+        Schema::dropIfExists('bills');
     }
 };

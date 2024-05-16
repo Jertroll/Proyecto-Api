@@ -13,12 +13,11 @@ return new class extends Migration
     {
         Schema::create('detalle_facturas', function (Blueprint $table) {
             $table->id('idDetalleFactura')->primary()->autoIncrement();
-            $table->unsignedBigInteger('idFactura');
-            $table->foreign('idFactura')->references('idFactura')->on('facturas');
-            $table->DateTime('fechaHora');
-            $table->integer('total');
+            $table->unsignedBigInteger('idFactura')->unique();
             $table->decimal('impuesto', 10, 2);
-            $table->decimal('totalPagar', 10, 2);
+            $table->integer('totalPagar');
+
+            $table->foreign('idFactura')->references('id')->on('bills')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detalle_factura');
+        Schema::dropIfExists('detalle_facturas');
     }
 };

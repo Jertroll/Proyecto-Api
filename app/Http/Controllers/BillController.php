@@ -15,12 +15,17 @@ class BillController extends Controller
 {
     public function index()
     {
-        $facturas = Bill::all();
-        return response()->json($facturas);
+        $facturas=Bill::with('user','compra')->get();
+        $response=array(
+            "status"=>200,
+            "message"=>"Todos los registro de facturas",
+            "data"=>$facturas
+        );
+        return response()->json($response,200);
     }
 
     public function store(Request $request)
-{
+  {
     $data = $request->input('data', null);
     
         if (!$data) {
@@ -34,7 +39,7 @@ class BillController extends Controller
             'nomTienda' => 'required',
             'fechaEmision' => 'required',
             'metodoPago' => 'required',
-            'totalPagar' => 'required',
+            'total' => 'required',
             'idCompra' => 'required',
         ]);
     
@@ -59,8 +64,6 @@ class BillController extends Controller
             return response()->json(['status' => 500, 'message' => 'Error al crear la factura: ' . $e->getMessage()], 500);
         }
 
-    } 
-    
     $data = json_decode($data, true);
     $validator = \Validator::make($data, [
         'idFactura' => 'required',
@@ -68,7 +71,7 @@ class BillController extends Controller
         'nomTienda' => 'required',
         'fechaEmision' => 'required',
         'metodoPago' => 'required',
-        'totalPagar' => '',
+        'total' => '',
         'idCompra' => 'required',
     ]);
     
@@ -83,8 +86,7 @@ class BillController extends Controller
         
         // Obtener la compra correspondiente al idCompra
         $compra = Compra::findOrFail($data['idCompra']);
-       
-        // Crear una instancia del controlador de compras para acceder al método calcularTotal()
+    
         $compraController = new CompraController();
         
         // Calcular el total de la compra
@@ -104,8 +106,8 @@ class BillController extends Controller
     } catch (\Exception $e) {
         return response()->json(['status' => 500, 'message' => 'Error al crear la factura: ' . $e->getMessage()], 500);
     }
-
 }
+
 
 
     public function destroy($id)
@@ -156,7 +158,20 @@ class BillController extends Controller
         } catch (\Exception $e) {
             return response()->json(['status' => 500, 'message' => 'Error al actualizar la factura: ' . $e->getMessage()], 500);
         }
+     }
+     public function calcularTotalPagar($idFactura, $impuesto)
+  {
+    $factura = Bill::findOrFail($idFactura);
+
+    // Verificar si la factura existe y si su total es válido
+    if (!isset($factura->total)) {
+        throw new \Exception("El total de la factura no es válido. ID de factura: " . $idFactura);
     }
 
-    
+    // Calcular el total a pagar sumando el total de la factura y el impuesto
+    $totalPagar = $factura->total + $impuesto;
+
+    return $totalPagar;
+  }
+
 }

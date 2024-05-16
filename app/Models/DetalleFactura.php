@@ -12,8 +12,6 @@ class DetalleFactura extends Model
     protected $fillable = [
         'idDetalleFactura',
         'idFactura',
-        'fecha',
-        'totalHora',
         'impuesto',
         'totalPagar',
     ];

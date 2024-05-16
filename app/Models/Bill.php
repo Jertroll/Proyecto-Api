@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Bill extends Model
 {
     use HasFactory;
+    protected $table='bills';
     protected $fillable = [
         'idFactura',
         'idUsuario',
         'nomTienda',
         'fechaEmision',
         'metodoPago',
-        'totalPagar',
+        'total',
         'idCompra'
     ];
 
@@ -22,9 +23,6 @@ class Bill extends Model
 
     public $timestamps = false;
 
-    /**
-     * Get the user that owns the invoice.
-     */
     public function user()
     {
         return $this->belongsTo(User::class, 'idUsuario');

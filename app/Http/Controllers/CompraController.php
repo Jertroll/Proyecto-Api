@@ -11,17 +11,13 @@ class CompraController extends Controller
 {
     public function index()
     {
-        // Obtener todas las compras con las relaciones de usuario, carrito y productos cargadas
         $compras = Compra::with('user', 'carrito.productos')->get();
     
         // Iterar sobre cada compra y obtener la lista de productos asociada
         foreach ($compras as $compra) {
             $productos = $compra->carrito->productos;
-    
             $compra->ListaProduc = $productos;
         }
-    
-        // Construir la respuesta JSON
         $response = [
             "status" => 200,
             "message" => "Todos los registros de compras",
@@ -34,12 +30,11 @@ class CompraController extends Controller
 
     public function show($idCompra)
     {
-        // Obtener la compra con las relaciones de usuario y carrito cargadas
         $compra = Compra::with('user', 'carrito')->findOrFail($idCompra);
         
-        // Devolver la compra junto con las relaciones en formato JSON
         return response()->json($compra);
     } 
+
     public function store(Request $request)
     {
         $data = $request->input('data', null);
@@ -77,7 +72,6 @@ class CompraController extends Controller
             // Elimina los caracteres de escape (\)
             $jsonString = stripslashes($jsonString);
             
-            // Decodifica la cadena JSON
             $data = json_decode($jsonString, true);
             
             // Ahora, $data contendrá un array de objetos
@@ -87,8 +81,7 @@ class CompraController extends Controller
             $compra->hora = date('H:i:s');
         
             $compra->save();
-           /* $carrito->productos()->detach();*/
-            
+    
             return response()->json(['status' => 201, 'message' => 'Compra creada', 'compra' => $compra], 201);
             
         } catch (\Exception $e) {
@@ -139,8 +132,6 @@ public function update(Request $request, $id)
         }
         
         $compra->estadoCompra = $data['estadoCompra'];
-       
-        
         $compra->save();
 
         return response()->json([
@@ -155,22 +146,18 @@ public function update(Request $request, $id)
 
 public function calcularTotal($idCompra)
 {
-    // Buscar la compra por su ID
     $compra = Compra::find($idCompra);
 
     // Verificar si se encontró la compra
     if (!$compra) {
-        // Si no se encuentra la compra, retornar null o lanzar una excepción, dependiendo del caso
-        // Aquí, por simplicidad, se retornará null
+
         return null;
     }
 
     // Obtener los productos del carrito asociado a la compra
     $productos = $compra->carrito->productos;
 
-    // Inicializar el total
     $total = 0;
-
     // Iterar sobre los productos y calcular el subtotal
     foreach ($productos as $producto) {
         $precio = $producto->precio;
@@ -179,9 +166,7 @@ public function calcularTotal($idCompra)
         $total += $subtotal;
     }
 
-    // Retornar el total calculado
     return $total;
 }
-
 
 }

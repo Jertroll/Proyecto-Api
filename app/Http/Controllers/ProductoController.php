@@ -9,9 +9,7 @@ use App\Models\Carrito;
 
 class ProductoController extends Controller
 {
-   /* 
-     * Metodo GET para obtener todos los registros
-     */
+  
     public function index(){
         $data=Producto::all();
         $response=array(
@@ -22,9 +20,7 @@ class ProductoController extends Controller
         return response()->json($response,200);
 
     }
-    /**
-     * Metodo POST para crear un registro
-     */
+ 
     public function store(Request $request){
         $data_input=$request->input('data',null);
         if($data_input){
