@@ -158,5 +158,3 @@ class BillController extends Controller
         }
     }
 
-    
-}
