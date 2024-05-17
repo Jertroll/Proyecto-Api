@@ -9,7 +9,7 @@ use App\Models\User;
 class JwtAuth{
     private $key;
     function __construct(){
-        $this->key="aswqdfewqeddafe23ewresa"; //Llave privada
+        $this->key="ELperrocr"; //Llave privada
     }
     public function getToken($email,$password){
         $pass=hash('sha256',$password);
@@ -26,7 +26,7 @@ class JwtAuth{
                 'telefono'=>$user->telefono,
                 'direccion'=>$user->direccion,
                 'cedula'=>$user->cedula,
-                'role'=>$user->role,
+                'rol'=>$user->rol,
                 'iat'=>time(),
                 'exp'=>time()+(2000)
             );

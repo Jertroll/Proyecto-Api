@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\Helpers\JwtAuth;
 
 
+
+
 class UserController extends Controller
 {
     public function index(){
@@ -22,23 +24,25 @@ class UserController extends Controller
 
     }
     
-    public function show($id){
-        $data=User::find($id);
-        if(is_object($data)){
-            $data=$data->load('carrito'); //No es user es otro en el que use la relacion
-            $response=array(
-                'status'=>200,
-                'message'=>'Datos de la categoria',
-                'category'=>$data
-            );
-        }else{
-            $response=array(
-                'status'=>404,
-                'message'=>'Recurso no encontrado'                
-            );
+    public function show($id)
+    {
+        $data = User::find($id);
+        if (is_object($data)) {
+            $response = [
+                'status' => 200,
+                'message' => 'Datos del usuario',
+                'user' => $data
+            ];
+        } else {
+            $response = [
+                'status' => 404,
+                'message' => 'Usuario no encontrado'
+            ];
         }
-        return response()->json($response,$response['status']);
+    
+        return response()->json($response, $response['status']);
     }
+    
 
     public function store(Request $request){
         $data_input=$request->input('data',null);
@@ -93,8 +97,13 @@ class UserController extends Controller
 
 
     public function update(Request $request, $id)
-    {
-            {
+    {   
+        $jwt = new JwtAuth();
+        $token = $request->header('wtoolklefn'); // Header
+        $logged = $jwt->checkToken($token, true);
+
+        if ($logged->iss==$id) {
+            
                 $dataInput = $request->input('data', null);
                 $data = json_decode($dataInput, true);
         
@@ -150,7 +159,18 @@ class UserController extends Controller
                 }
         
                 return response()->json($response, $response['status']);
-        }
+        
+        } else {
+            $response = array(
+                'status' => 400,
+                'message' => 'El ID del user$user no es válido',
+                
+            );
+            return response()->json($response, $response['status']);
+        } 
+
+
+           
     }
 
     public function destroy($id){
