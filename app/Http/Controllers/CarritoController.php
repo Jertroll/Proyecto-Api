@@ -138,7 +138,14 @@ class CarritoController extends Controller
     
                 if ($carrito) {
                     foreach ($data['_productos'] as $producto) {
-                        $carrito->productos()->updateExistingPivot($producto['id'], ['cantidad' => $producto['cantidad']]);
+                        // Verificar si el producto existe en el carrito
+                        if ($carrito->productos()->where('_productos.id', $producto['id'])->exists()) {
+                            // Actualizar la cantidad del producto en el carrito
+                            $carrito->productos()->updateExistingPivot($producto['id'], ['cantidad' => $producto['cantidad']]);
+                        } else {
+                            // El producto no existe en el carrito, puedes manejar esto según tu lógica
+                            // Por ejemplo, agregar el producto al carrito o ignorarlo
+                        }
                     }
     
                     $response = [
@@ -167,7 +174,8 @@ class CarritoController extends Controller
     
         return response()->json($response, $response['status']);
     }
-
+    
+    
     public function addProductToCart(Request $request, $id){
         $producto_id = $request->input('producto_id');
         $cantidad = $request->input('cantidad');

@@ -57,7 +57,7 @@ function(){
 
 
     //compra
-    Route::post('/compra/calcularTotal',[CompraController::class,'calcularTotal']);
+    
   
     //rutas automaticas Restful
 

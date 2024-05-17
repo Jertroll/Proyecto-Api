@@ -21,56 +21,64 @@ class ProductoController extends Controller
 
     }
  
-    public function store(Request $request){
-        $data_input=$request->input('data',null);
-        if($data_input){
-            $data=json_decode($data_input,true);
-            $data=array_map('trim',$data);
-            $rules=[
-                'id'=>'required',
-                'nombre'=>'required',
-                'precio'=>'required',
-                'descripcion'=>'required',
-                'talla'=>'required',
-                'estado'=>'required',
-                'imagen'=>'required',
+    public function store(Request $request)
+    {
+        $jsonData = $request->json()->all(); // Obtener el JSON del cuerpo de la solicitud
+        $data = $jsonData['data'] ?? null; // Extraer los datos del campo 'data'
+    
+        if ($data) {
+            $data = array_map('trim', $data);
+            $rules = [
+                'id' => 'required',
+                'nombre' => 'required',
+                'precio' => 'required',
+                'descripcion' => 'required',
+                'talla' => 'required',
+                'estado' => [
+                    'required',
+                    function ($attribute, $value, $fail) {
+                        if (!in_array($value, ['disponible', 'no disponible'])) {
+                            $fail($attribute . ' no es válido. El estado debe ser "disponible" o "no disponible".');
+                        }
+                    },
+                ],
+                'imagen' => 'required',
             ];
-            $isValid=\validator($data,$rules);
-            if(!$isValid->fails()){
-                $producto=new Producto();
-                $producto->id=$data['id'];
-                $producto->nombre=$data['nombre'];
-                $producto->precio=$data['precio'];
-                $producto->descripcion=$data['descripcion'];
-                $producto->talla=$data['talla'];
-                $producto->estado=$data['estado'];
-                $producto->imagen=$data['imagen'];
+            $isValid = \validator($data, $rules);
+            if (!$isValid->fails()) {
+                $producto = new Producto();
+                $producto->id = $data['id'];
+                $producto->nombre = $data['nombre'];
+                $producto->precio = $data['precio'];
+                $producto->descripcion = $data['descripcion'];
+                $producto->talla = $data['talla'];
+                $producto->estado = $data['estado'];
+                $producto->imagen = $data['imagen'];
                 $producto->save();
-                $response=array(
-                    'status'=>201,
-                    'message'=>'producto agregado',
-                    'producto'=>$producto
+                $response = array(
+                    'status' => 201,
+                    'message' => 'Producto agregado',
+                    'producto' => $producto
                 );
-            }else{
-                $response=array(
-                    'status'=>406,
-                    'message'=>'Datos inválidos',
-                    'errors'=>$isValid->errors()
+            } else {
+                $response = array(
+                    'status' => 406,
+                    'message' => 'Datos inválidos',
+                    'errors' => $isValid->errors()
                 );
             }
-        }else{
-            $response=array(
-                'status'=>400,
-                'message'=>'No se encontró el objeto data'                
+        } else {
+            $response = array(
+                'status' => 400,
+                'message' => 'No se encontró el objeto data'
             );
         }
-        return response()->json($response,$response['status']);
-
+        return response()->json($response, $response['status']);
     }
+    
     public function show($id){
         $data=producto::find($id);
         if(is_object($data)){
-            $data=$data->load('posts');
             $response=array(
                 'status'=>200,
                 'message'=>'Datos del producto',
@@ -107,71 +115,68 @@ class ProductoController extends Controller
         return response()->json($response,$response['status']);
     }
     public function update(Request $request, $id)
-    {
-           {
-                $dataInput = $request->input('data', null);
-                $data = json_decode($dataInput, true);
-        
-                if (empty($data)) {
+{
+    $jsonData = $request->json()->all(); // Obtener el JSON del cuerpo de la solicitud
+    $data = $jsonData['data'] ?? null; // Extraer los datos del campo 'data'
+
+    if ($data === null) {
+        $response = array(
+            'status' => 400,
+            'message' => 'Datos no proporcionados o incorrectos',
+        );
+    } else {
+        $rules = [
+            'nombre' => 'required',
+            'precio' => 'required',
+            'descripcion' => 'required',
+            'talla' => 'required',
+            'estado' => 'required',
+            'imagen' => 'required'
+        ];
+
+        $valid = \validator($data, $rules);
+
+        if ($valid->fails()) {
+            $response = array(
+                'status' => 406,
+                'message' => 'Datos enviados no cumplen con las reglas establecidas',
+                'errors' => $valid->errors(),
+            );
+        } else {
+            if (!empty($id)) {
+                $producto = Producto::find($id);
+
+                if ($producto) {
+                    $producto->nombre = $data['nombre'];
+                    $producto->precio = $data['precio'];
+                    $producto->descripcion = $data['descripcion'];
+                    $producto->talla = $data['talla'];
+                    $producto->estado = $data['estado'];
+                    $producto->imagen = $data['imagen'];
+                    $producto->save();
+
                     $response = array(
-                        'status' => 400,
-                        'message' => 'Datos no proporcionados o incorrectos',
+                        'status' => 200,
+                        'message' => 'Datos actualizados satisfactoriamente',
                     );
                 } else {
-                    $rules = [
-                        
-                        'nombre'=>'required',
-                        'precio'=>'required',
-                        'descripcion'=>'required',
-                        'talla'=>'required',
-                        'estado'=>'required',
-                        'imagen'=>'required'
-
-                    ];
-        
-                    $valid = \validator($data, $rules);
-        
-                    if ($valid->fails()) {
-                        $response = array(
-                            'status' => 406,
-                            'message' => 'Datos enviados no cumplen con las reglas establecidas',
-                            'errors' => $valid->errors(),
-                        );
-                    } else {
-                        if (!empty($id)) {
-                            $producto = Producto::find($id);
-        
-                            if ($producto) {
-                                $producto->nombre=$data['nombre'];
-                                $producto->precio=$data['precio'];
-                                $producto->descripcion=$data['descripcion'];
-                                $producto->talla=$data['talla'];
-                                $producto->estado=$data['estado'];
-                                $producto->imagen=$data['imagen'];
-                                $producto->save();
-        
-                                $response = array(
-                                    'status' => 200,
-                                    'message' => 'Datos actualizados satisfactoriamente',
-                                );
-                            } else {
-                                $response = array(
-                                    'status' => 400,
-                                    'message' => 'El producto no existe',
-                                );
-                            }
-                        } else {
-                            $response = array(
-                                'status' => 400,
-                                'message' => 'El ID del producto no es válido',
-                            );
-                        }
-                    }
+                    $response = array(
+                        'status' => 400,
+                        'message' => 'El producto no existe',
+                    );
                 }
-        
-                return response()->json($response, $response['status']);
+            } else {
+                $response = array(
+                    'status' => 400,
+                    'message' => 'El ID del producto no es válido',
+                );
+            }
         }
     }
+
+    return response()->json($response, $response['status']);
+}
+
     public function uploadImage(Request $request){
         $isValid=\Validator::make($request->all(),['file0'=>'required|image|mimes:jpg,png,jpeg,svg']);
         if(!$isValid->fails()){

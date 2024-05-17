@@ -10,7 +10,7 @@ class Bill extends Model
     use HasFactory;
     protected $table='bills';
     protected $fillable = [
-        'idFactura',
+        'id',
         'idUsuario',
         'nomTienda',
         'fechaEmision',
@@ -19,7 +19,7 @@ class Bill extends Model
         'idCompra'
     ];
 
-    protected $primaryKey = 'idFactura';
+    protected $primaryKey = 'id';
 
     public $timestamps = false;
 

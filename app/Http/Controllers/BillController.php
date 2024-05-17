@@ -23,92 +23,68 @@ class BillController extends Controller
         );
         return response()->json($response,200);
     }
+    public function show($id)
+    {
+        try {
+            $bill = Bill::with('user', 'compra')->findOrFail($id);
+            return response()->json(['status' => 200, 'message' => 'Factura encontrada', 'bill' => $bill], 200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 404, 'message' => 'Factura no encontrada'], 404);
+        }
+    }
+    
 
     public function store(Request $request)
-  {
-    $data = $request->input('data', null);
-    
-        if (!$data) {
-            return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
-        }
-    
-        $data = json_decode($data, true);
-        $validator = \Validator::make($data, [
-            'idFactura' => 'required',
-            'idUsuario' => 'required',
-            'nomTienda' => 'required',
-            'fechaEmision' => 'required',
-            'metodoPago' => 'required',
-            'total' => 'required',
-            'idCompra' => 'required',
-        ]);
-    
-        if ($validator->fails()) {
-            return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' => $validator->errors()], 406);
-        }
-    
-        try {
-            $bill = new Bill();
-            $bill->fill($data);
-        
-            // Aquí obtienes el usuario asociado y lo guardas en el campo idUsuario
-            $user = User::findOrFail($data['idUsuario']);
-            $bill->user()->associate($user);
-            $compra = Compra::findOrFail($data['idCompra']);
-            $bill->compra()->associate($compra);
-        
-            $bill->save();
-        
-            return response()->json(['status' => 201, 'message' => 'Factura creada', 'bill' => $bill], 201);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 500, 'message' => 'Error al crear la factura: ' . $e->getMessage()], 500);
-        }
-
-    $data = json_decode($data, true);
-    $validator = \Validator::make($data, [
-        'idFactura' => 'required',
-        'idUsuario' => 'required',
-        'nomTienda' => 'required',
-        'fechaEmision' => 'required',
-        'metodoPago' => 'required',
-        'total' => '',
-        'idCompra' => 'required',
-    ]);
-    
-    if ($validator->fails()) {
-        return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' => $validator->errors()], 406);
-    }
-    
-    try {
-        $bill = new Bill();
-        $bill->fill($data);
+    {
+      $data = $request->input('data', null);
       
+          if (!$data) {
+              return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
+          }
+
+      $data = json_decode($data, true);
+      $validator = \Validator::make($data, [
+          'id' => 'required',
+          'idUsuario' => 'required',
+          'nomTienda' => 'required',
+          'fechaEmision' => 'required',
+          'metodoPago' => 'required',
+          'total' => '',
+          'idCompra' => 'required',
+      ]);
+      
+      if ($validator->fails()) {
+          return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' => $validator->errors()], 406);
+      }
+      
+      try {
+          $bill = new Bill();
+          $bill->fill($data);
         
-        // Obtener la compra correspondiente al idCompra
-        $compra = Compra::findOrFail($data['idCompra']);
-    
-        $compraController = new CompraController();
-        
-        // Calcular el total de la compra
-        $total = $compraController->calcularTotal($data['idCompra']);
-
-        // Asignar el total a la factura
-        $bill->totalPagar = $total;
-
-        // Aquí obtienes el usuario asociado y lo guardas en el campo idUsuario
-
-        $user = User::findOrFail($data['idUsuario']);
-        $bill->user()->associate($user);
-        $bill->compra()->associate($compra);
-        $bill->save();
-    
-        return response()->json(['status' => 201, 'message' => 'Factura creada', 'bill' => $bill], 201);
-    } catch (\Exception $e) {
-        return response()->json(['status' => 500, 'message' => 'Error al crear la factura: ' . $e->getMessage()], 500);
-    }
-}
-
-
+          
+          // Obtener la compra correspondiente al idCompra
+          $compra = Compra::findOrFail($data['idCompra']);
+      
+          $compraController = new CompraController();
+          
+          // Calcular el total de la compra
+          $total = $compraController->calcularTotal($data['idCompra']);
+  
+          // Asignar el total a la factura
+          $bill->total = $total;
+  
+          // Aquí obtienes el usuario asociado y lo guardas en el campo idUsuario
+  
+          $user = User::findOrFail($data['idUsuario']);
+          $bill->user()->associate($user);
+          $bill->compra()->associate($compra);
+          $bill->save();
+      
+          return response()->json(['status' => 201, 'message' => 'Factura creada', 'bill' => $bill], 201);
+      } catch (\Exception $e) {
+          return response()->json(['status' => 500, 'message' => 'Error al crear la factura: ' . $e->getMessage()], 500);
+      }
+  }
 
     public function destroy($id)
 {
