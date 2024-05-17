@@ -220,13 +220,13 @@ class UserController extends Controller
 
      public function getIdentity(Request $request){
         $jwt=new JwtAuth();
-        $token=$request->header('wtoolklefn');
+        $token=$request->header('ElPerroCR');
         if(isset($token)){
             $response=$jwt->checkToken($token,true);
         }else{
             $response=array(
                 'status'=>404,
-                'message'=>'token (wtoolklefn) no encontrado',
+                'message'=>'token (ElPerroCR) no encontrado',
             );
         }
         return response()->json($response);

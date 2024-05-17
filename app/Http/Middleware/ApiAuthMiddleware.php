@@ -21,7 +21,7 @@ class ApiAuthMiddleware
         //Token
 
         $jwt=new JwtAuth();
-        $token=$request->header('ElPerro_CR');
+        $token=$request->header('ElPerroCR');
         $logged=$jwt->checkToken($token);
         if($logged){
             return $next($request);
