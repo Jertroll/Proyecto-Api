@@ -47,7 +47,7 @@ class CompraController extends Controller
         $array = json_decode($jsonString, true);
 
         $validator = \Validator::make($data, [
-            'idCompra' => 'required',
+            
             'idUsuario' => 'required',
             'idCarrito' => 'required',
             'estadoCompra' => 'required',
