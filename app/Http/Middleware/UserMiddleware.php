@@ -12,7 +12,7 @@ class UserMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $jwt = new JwtAuth();
-        $token = $request->header('ElPerro CR'); // Asegúrate de que el token esté en el encabezado Authorization
+        $token = $request->header('ElPerro_CR'); // Asegúrate de que el token esté en el encabezado Authorization
         $logged = $jwt->checkToken($token, true);
 
 
