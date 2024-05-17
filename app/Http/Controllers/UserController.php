@@ -99,7 +99,7 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {   
         $jwt = new JwtAuth();
-        $token = $request->header('wtoolklefn'); // Header
+        $token = $request->header('ElPerroCR'); // Header
         $logged = $jwt->checkToken($token, true);
 
         if ($logged->iss==$id) {
