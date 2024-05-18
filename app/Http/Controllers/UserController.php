@@ -101,14 +101,10 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {   
-        $jwt = new JwtAuth();
-        $token = $request->header('ElPerroCR'); // Header
-        $logged = $jwt->checkToken($token, true);
 
-        if ($logged->iss==$id) {
-            
+
                 $dataInput = $request->input('data', null);
-                $data = json_decode($dataInput, true);
+                $data = $dataInput;
         
                 if (empty($data)) {
                     $response = array(
@@ -162,42 +158,14 @@ class UserController extends Controller
                 }
         
                 return response()->json($response, $response['status']);
-        
-        } else {
-            $response = array(
-                'status' => 400,
-                'message' => 'El ID del user$user no es válido',
-                
-            );
-            return response()->json($response, $response['status']);
-        } 
 
 
            
     }
 
-    public function destroy($id){
-        if(isset($id)){
-            $deleted=User::where('id',$id)->delete();
-            if($deleted){
-                 $response=array(
-                     'status'=>200,
-                     'message'=>'Usuario eliminada',                    
-                 );
-            }else{
-             $response=array(
-                 'status'=>400,
-                 'message'=>'No se pudo eliminar el recurso, compruebe que exista'                
-             );
-            }
-         }else{
-             $response=array(
-                 'status'=>406,
-                 'message'=>'Falta el identificador del recurso a eliminar'                
-             );
-         }
-         return response()->json($response,$response['status']);
-     }
+
+
+
     
      public function login(Request $request){
         $data_input=$request->input('data',null);
@@ -234,5 +202,29 @@ class UserController extends Controller
         }
         return response()->json($response);
     }
+
+    public function destroy($id) {
+        if (isset($id)) {
+            $deleted = User::where('id', $id)->delete();
+            if ($deleted) {
+                $response = array(
+                    'status' => 200,
+                    'message' => 'Usuario eliminado',
+                );
+            } else {
+                $response = array(
+                    'status' => 400,
+                    'message' => 'No se pudo eliminar el recurso, compruebe que exista'
+                );
+            }
+        } else {
+            $response = array(
+                'status' => 406,
+                'message' => 'Falta el identificador del recurso a eliminar'
+            );
+        }
+        return response()->json($response, $response['status']);
+    }
+
     
 }

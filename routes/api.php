@@ -15,7 +15,9 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\UserMiddleware;
 
 Route::prefix('v1')->group(function () {
-  
+   
+      Route::get('/productos', [ProductoController::class,'index']); 
+      Route::get('/productos/{id}',[ProductoController::class,'show']); 
 
       Route::post('/user/login', [UserController::class, 'login']);
 
@@ -26,11 +28,12 @@ Route::prefix('v1')->group(function () {
         Route::resource('/user', UserController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]); //Se excluyen porque son obsolutas por temas de seguridad 
         Route::resource('/producto', ProductoController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
         Route::resource('/carrito', CarritoController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
-        Route::resource('/bill', BillController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
         Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
+        Route::resource('/bill', BillController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
         Route::resource('/detalleFactura', DetalleFacturaController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
 
-
+        Route::post('/producto/upload',[ProductoController::class,'uploadImage'])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
+        Route::get('/producto/getimage/{filename}',[ProductoController::class,'getImage'])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
     }); //admin prefijo -------------
 
     
@@ -59,11 +62,9 @@ Route::prefix('v1')->group(function () {
         Route::put('/user/{id}', [UserController::class, 'update'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
         Route::post('/user/{id}', [UserController::class, 'store'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
 
-           //Producto
-        Route::post('/producto/upload',[ProductoController::class,'uploadImage']);
-        Route::get('/producto/getimage/{filename}',[ProductoController::class,'getImage']);
-        Route::get('/productos/{id}', [ProductoController::class,'index'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
-        Route::get('/productos/{id}',[ProductoController::class,'show'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
+           //Producto Generales, pueden ver los productos sin necesidad de estas registrado en la apgina
+
+
 
         //compra
         Route::get('/compras', [CompraController::class, 'index'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
