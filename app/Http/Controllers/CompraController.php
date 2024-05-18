@@ -33,6 +33,14 @@ class CompraController extends Controller
         $compra = Compra::with('user', 'carrito')->findOrFail($idCompra);
         
         return response()->json($compra);
+
+        $response=array(
+            "status"=>200,
+            "message"=>"Todos los registro de los productos",
+            "data"=>$data
+        );
+        return response()->json($response,200);
+
     } 
 
     public function store(Request $request)

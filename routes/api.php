@@ -1,8 +1,5 @@
 <?php
 
-
-
-
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BillController;
 
@@ -19,21 +16,25 @@ use App\Http\Middleware\UserMiddleware;
 
 Route::prefix('v1')->group(function () {
   
+
+      Route::post('/user/login', [UserController::class, 'login']);
+
       //rutas automaticas Restful Admin
       Route::group(['prefix' => '/admin'], function () {
        
         Route::get('/user/getidentity', [UserController::class, 'getIdentity'])->middleware(ApiAuthMiddleware::class);
-
-        Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
         Route::resource('/user', UserController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]); //Se excluyen porque son obsolutas por temas de seguridad 
-        Route::resource('/bill', BillController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
         Route::resource('/producto', ProductoController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
         Route::resource('/carrito', CarritoController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
+        Route::resource('/bill', BillController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
+        Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
         Route::resource('/detalleFactura', DetalleFacturaController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
+
+
     }); //admin prefijo -------------
 
     
-    Route::post('/user/login', [UserController::class, 'login']);
+
   
     //rutas especificas
 
@@ -59,10 +60,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/user/{id}', [UserController::class, 'store'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
 
            //Producto
- Route::post('/producto/upload',[ProductoController::class,'uploadImage']);
-   Route::get('/producto/getimage/{filename}',[ProductoController::class,'getImage']);
-   Route::get('/productos/{id}', [ProductoController::class,'index'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
-   Route::get('/productos/{id}',[ProductoController::class,'show'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
+        Route::post('/producto/upload',[ProductoController::class,'uploadImage']);
+        Route::get('/producto/getimage/{filename}',[ProductoController::class,'getImage']);
+        Route::get('/productos/{id}', [ProductoController::class,'index'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
+        Route::get('/productos/{id}',[ProductoController::class,'show'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
 
         //compra
         Route::get('/compras', [CompraController::class, 'index'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
