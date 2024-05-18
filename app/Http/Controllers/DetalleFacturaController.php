@@ -85,27 +85,19 @@ class DetalleFacturaController extends Controller
 }
 
 public function destroy($id)
-    {
-        if (isset($id)) {
-            $deleted = DetalleFactura::where('id', $id)->delete();
-            if ($deleted) {
-                $response = array(
-                    'status' => 200,
-                    'message' => 'Detalle de factura eliminado',
-                );
-            } else {
-                $response = array(
-                    'status' => 400,
-                    'message' => 'No se pudo eliminar el recurso, compruebe que exista'
-                );
-            }
-        } else {
-            $response = array(
-                'status' => 406,
-                'message' => 'Falta el identificador del recurso a eliminar'
-            );
+{
+    try {
+        $detalle = DetalleFactura::find($id);
+        if (!$detalle) {
+            return response()->json(['status' => 404, 'message' => 'Detalle Factura no encontrada'], 404);
         }
-        return response()->json($response, $response['status']);
+
+        $detalle->delete();
+
+        return response()->json(['status' => 200, 'message' => 'Detalle Factura eliminada con éxito'], 200);
+    } catch (\Exception $e) {
+        return response()->json(['status' => 500, 'message' => 'Error al eliminar la Detalle Factura: ' . $e->getMessage()], 500);
     }
+}
 
 }

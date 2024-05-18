@@ -34,7 +34,13 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/producto/upload',[ProductoController::class,'uploadImage'])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
         Route::get('/producto/getimage/{filename}',[ProductoController::class,'getImage'])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
+
+
+        Route::post('/carrito/{id}/vaciarCarrito', [CarritoController::class, 'vaciarCarrito'])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
     }); //admin prefijo -------------
+
+
+
 
     
 
@@ -48,12 +54,14 @@ Route::prefix('v1')->group(function () {
         Route::get('/bill/{idFactura}', [BillController::class, 'index'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
 
         //Carrito
-        Route::post('/carrito/{id}/addProductToCart', [CarritoController::class, 'addProductToCart'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]); // Agregar producto al carrito
-        Route::post('/carrito/{id}/removeProductFromCart', [CarritoController::class, 'removeProductFromCart'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
-        Route::post('/carrito/{id}/vaciarCarrito', [CarritoController::class, 'vaciarCarrito'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
-        Route::get('/carritos/{id}', [CarritoController::class, 'show'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
-        Route::put('/carritos/{id}', [CarritoController::class, 'update'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
+       // Route::post('/carrito/{id}/addProductToCart', [CarritoController::class, 'addProductToCart'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]); // Agregar producto al carrito
+       // Route::post('/carrito/{id}/removeProductFromCart', [CarritoController::class, 'removeProductFromCart'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
 
+
+ 
+        Route::get('/carrito/{id}', [CarritoController::class, 'show'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
+        Route::put('/carrito/{id}', [CarritoController::class, 'update'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
+        Route::post('/carrito/store', [CarritoController::class, 'store'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
 
         //Usuario
         

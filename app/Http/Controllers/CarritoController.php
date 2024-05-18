@@ -177,6 +177,8 @@ class CarritoController extends Controller
     
     
     public function addProductToCart(Request $request, $id){
+        dd($request->all()); 
+        
         $producto_id = $request->input('producto_id');
         $cantidad = $request->input('cantidad');
     
@@ -231,58 +233,60 @@ class CarritoController extends Controller
     
  
     
-    public function removeProductFromCart(Request $request, $id){
-            $producto_id = $request->input('producto_id');
+    public function removeProductFromCart(Request $request, $id) {
+        // Asegúrate de que 'producto_id' se obtiene del request correctamente
+        $producto_id = $request->input('producto_id');
     
-            // Validar los datos
-            $rules = [
-                'producto_id' => 'required|numeric', // Ajusta el nombre del campo según tu necesidad
-            ];
+        // Validar los datos
+        $rules = [
+            'producto_id' => 'required|numeric', // Ajusta el nombre del campo según tu necesidad
+        ];
     
-            $validator = \validator($request->all(), $rules);
+        // Usar el validador de Laravel
+        $validator = \Validator::make($request->all(), $rules);
     
-            if ($validator->fails()) {
-                // Si la validación falla, retorna un mensaje de error
-                $response = [
-                    'status' => 406,
-                    'message' => 'Datos enviados no cumplen con las reglas establecidas',
-                    'errors' => $validator->errors(),
-                ];
-            } else {
-                // Buscar el carrito por su ID
-                $carrito = Carrito::find($id);
+        if ($validator->fails()) {
+            // Si la validación falla, retorna un mensaje de error
+            return response()->json([
+                'status' => 406,
+                'message' => 'Datos enviados no cumplen con las reglas establecidas',
+                'errors' => $validator->errors(),
+            ], 406);
+        } 
     
-                if (!$carrito) {
-                    // Si el carrito no existe, retorna un mensaje de error
-                    $response = [
-                        'status' => 404,
-                        'message' => 'El carrito no existe',
-                    ];
-                } else {
-                    // Verificar si el producto está en el carrito
-                    $productoExistente = $carrito->productos()->where('producto_id', $producto_id)->first();
+        // Buscar el carrito por su ID
+        $carrito = Carrito::find($id);
     
-                    if (!$productoExistente) {
-                        // Si el producto no está en el carrito, retorna un mensaje de error
-                        $response = [
-                            'status' => 404,
-                            'message' => 'El producto no está en el carrito',
-                        ];
-                    } else {
-                        // Eliminar el producto del carrito
-                        $carrito->productos()->detach($producto_id);
-    
-                        // Respuesta de éxito
-                        $response = [
-                            'status' => 200,
-                            'message' => 'Producto eliminado del carrito satisfactoriamente',
-                        ];
-                    }
-                }
-            }
-    
-            return response()->json($response, $response['status']);
+        if (!$carrito) {
+            // Si el carrito no existe, retorna un mensaje de error
+            return response()->json([
+                'status' => 404,
+                'message' => 'El carrito no existe',
+            ], 404);
         }
+    
+        // Verificar si el producto está en el carrito
+        $productoExistente = $carrito->productos()->where('producto_id', $producto_id)->first();
+    
+        if (!$productoExistente) {
+            // Si el producto no está en el carrito, retorna un mensaje de error
+            return response()->json([
+                'status' => 404,
+                'message' => 'El producto no está en el carrito',
+            ], 404);
+        } 
+    
+        // Eliminar el producto del carrito
+        $carrito->productos()->detach($producto_id);
+    
+        // Respuesta de éxito
+        return response()->json([
+            'status' => 200,
+            'message' => 'Producto eliminado del carrito satisfactoriamente',
+        ], 200);
+    }
+    
+    
     
         public function vaciarCarrito(Request $request, $id)
         {
