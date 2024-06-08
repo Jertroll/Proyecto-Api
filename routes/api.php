@@ -14,12 +14,14 @@ use App\Http\Controllers\CarritoController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\UserMiddleware;
 
-Route::prefix('v1')->group(function () {
-   
+Route::prefix('v1')->group(function () { 
+
       Route::get('/productos', [ProductoController::class,'index']); 
       Route::get('/productos/{id}',[ProductoController::class,'show']); 
-
+     // Route::resource('/user', UserController::class, ['except' => ['create', 'edit']]); //Se excluyen porque son obsolutas por temas de seguridad 
       Route::post('/user/login', [UserController::class, 'login']);
+      Route::post('/user/store', [UserController::class, 'store']);
+      Route::get('/user/getidentity', [UserController::class, 'getIdentity'])->middleware(ApiAuthMiddleware::class);
 
       //rutas automaticas Restful Admin
       Route::group(['prefix' => '/admin'], function () {
