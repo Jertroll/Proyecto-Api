@@ -6,26 +6,67 @@ use Illuminate\Http\Request;
 use App\Models\Compra;
 use App\Models\Carrito;
 use App\Models\User;
+use Illuminate\Support\Facades\Log; 
 
 class CompraController extends Controller
 {
     public function index()
     {
+        // Añadir un log para verificar que el método se está llamando
+        Log::info('CompraController@index called');
+        
         $compras = Compra::with('user', 'carrito.productos')->get();
-    
+
+        // Verificar si se obtienen datos de compras
+        Log::info('Compras retrieved:', ['compras' => $compras->toArray()]);
+
+        if ($compras->isEmpty()) {
+            return response()->json([
+                "status" => 404,
+                "message" => "No se encontraron registros de compras",
+                "data" => []
+            ], 404);
+        }
+
         // Iterar sobre cada compra y obtener la lista de productos asociada
         foreach ($compras as $compra) {
-            $productos = $compra->carrito->productos;
-            $compra->ListaProduc = $productos;
+            $productos = $compra->carrito->productos->map(function($producto) {
+                return [
+                    'id' => $producto->id,
+                    'nombre' => $producto->nombre,
+                    'precio' => $producto->precio,  // Añade aquí cualquier otro atributo que desees mostrar
+                ];
+            });
+            
+            // Asignar la lista de productos formateada a un nuevo atributo en la compra
+            $compra->lista_productos = $productos;
         }
+        
+        // Formatear la respuesta para incluir solo los atributos deseados de las compras
         $response = [
             "status" => 200,
             "message" => "Todos los registros de compras",
-            "data" => $compras
+            "data" => $compras->map(function($compra) {
+                return [
+                    'id' => $compra->id,
+                    'user_id' => $compra->user_id,
+                    'user_name' => $compra->user->name,  // Suponiendo que el nombre del usuario está en el campo 'name'
+                    'fecha' => $compra->fecha,
+                    'total' => $compra->total,
+                    'lista_productos' => $compra->lista_productos,
+                    // Añade aquí cualquier otro atributo de la compra que desees mostrar
+                ];
+            })
         ];
 
         return response()->json($response, 200);
     }
+
+
+    
+    
+
+    
     
 
     public function show($idCompra)
