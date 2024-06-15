@@ -73,6 +73,7 @@ class UserController extends Controller
                 $user->password=hash('sha256',$data['password']);
 
                 $user->save();
+                
                 $response=array(
                     'status'=>201,
                     'message'=>'Usuario creado',

@@ -18,6 +18,7 @@ Route::prefix('v1')->group(function () {
   
 
       Route::post('/user/login', [UserController::class, 'login']);
+      Route::post('/user/register', [UserController::class, 'store']);
 
       //rutas automaticas Restful Admin
       Route::group(['prefix' => '/admin'], function () {
