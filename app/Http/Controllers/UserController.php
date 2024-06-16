@@ -71,6 +71,7 @@ class UserController extends Controller
                 $user->rol=$data['rol'];
                 $user->email=$data['email'];
                 $user->password=hash('sha256',$data['password']);
+                $user->imagen=$data['imagen'];
 
                 $user->save();
                 
@@ -227,5 +228,79 @@ class UserController extends Controller
         return response()->json($response, $response['status']);
     }
 
+    public function uploadImage(Request $request){
+        $image=$request->file('file0');
+        $isValid=\Validator::make($request->all(),['file0'=>'required|image|mimes:jpg,png,jpeg,svg']);
+        if(!$isValid->fails()){
+            $filename=\Str::uuid().".".$image->getClientOriginalExtension();
+            \Storage::disk('usuarios')->put($filename,\File::get($image));
+            $response=array(
+                'status'=>201,
+                'message'=>'Imagen guardada',
+                'filename'=>$filename,
+            );
+        }else{
+            $response=array(
+                'status'=>406,
+                'message'=>'Error: no se encontro el archivo',
+                'errors'=>$isValid->errors(),
+            );
+        }
+        return response()->json($response,$response['status']);
+    }
+    public function getImage($filename){
+        if(isset($filename)){
+            $exist=\Storage::disk('usuarios')->exists($filename);
+            if($exist){
+                $file=\Storage::disk('usuarios')->get($filename);
+                return new Response($file,200);
+            }else{
+                $response=array(
+                    'status'=>404,
+                    'message'=>'Imagen no existe',
+                );
+            }
+        }else{
+            $response=array(
+                'status'=>406,
+                'message'=>'No se definió el nombre de la imagen',
+            );
+        }
+        return response()->json($response,$response['status']);
+    }
+    public function updateImagen(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'file0' => 'required|image|mimes:jpg,png,jpeg,svg'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 400);
+        }
+        $user = User::findOrFail($id);
+        $image = $request->file('file0');
+        $filename = Str::uuid() . "." . $image->getClientOriginalExtension();
+
+        Storage::disk('usuarios')->put($filename, \File::get($image));
+
+        // Eliminar la imagen anterior si existe
+        if ($user->imagen) {
+            Storage::disk('usuarios')->delete($user->imagen);
+        }
+
+        $user->imagen = $filename;
+        $user->save();
+        $response = [
+            'status' => 200,
+            'message' => 'Imagen actualizada exitosamente',
+            'filename' => $filename
+        ];
+
+        return response()->json($response, 200);
+    }
     
 }
