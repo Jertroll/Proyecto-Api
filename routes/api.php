@@ -25,6 +25,10 @@ Route::prefix('v1')->group(function () {
       Route::post('/producto/upload',[ProductoController::class,'uploadImage']);
       Route::get('/producto/getimage/{filename}',[ProductoController::class,'getImage']);
       Route::put('/producto/{id}/update-imagen', [ProductoController::class, 'updateImagen'])->name('producto.update-imagen');
+
+      Route::post('/user/upload',[UserController::class,'uploadImage']);
+      Route::get('/user/getimage/{filename}',[UserController::class,'getImage']);
+      Route::put('/user/{id}/update-imagen', [UserController::class, 'updateImagen'])->name('user.update-imagen');
       //rutas automaticas Restful Admin
       Route::group(['prefix' => '/admin'], function () {
        
