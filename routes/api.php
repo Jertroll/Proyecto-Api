@@ -20,6 +20,8 @@ Route::prefix('v1')->group(function () {
 
     Route::resource('/producto', ProductoController::class, ['except' => ['create', 'edit']]);
       Route::post('/user/login', [UserController::class, 'login']);
+      Route::post('/user/register', [UserController::class, 'store']);
+
       Route::get('/productos/{id}',[ProductoController::class,'show']);
       Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']]);
       Route::post('/producto/upload',[ProductoController::class,'uploadImage']);
@@ -28,6 +30,10 @@ Route::prefix('v1')->group(function () {
       Route::resource('detalleCompra', DetalleCompraController::class);
       Route::get('/producto/buscar/{nombre}', [ProductoController::class, 'buscarNombre']);
       Route::post('/carrito/store', [CarritoController::class, 'store']);
+
+      Route::post('/user/upload',[UserController::class,'uploadImage']);
+      Route::get('/user/getimage/{filename}',[UserController::class,'getImage']);
+      Route::put('/user/{id}/update-imagen', [UserController::class, 'updateImagen'])->name('user.update-imagen');
       //rutas automaticas Restful Admin
       Route::group(['prefix' => '/admin'], function () {
        
@@ -54,7 +60,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/bill/{idFactura}', [BillController::class, 'index'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
 
         //Carrito
-       ->middleware([ApiAuthMiddleware::class, UserMiddleware::class]); // Agregar producto al carrito
+       
         Route::post('/carrito/{id}/removeProductFromCart', [CarritoController::class, 'removeProductFromCart'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
         Route::post('/carrito/{id}/vaciarCarrito', [CarritoController::class, 'vaciarCarrito'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
         Route::get('/carritos/{id}', [CarritoController::class, 'show'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
