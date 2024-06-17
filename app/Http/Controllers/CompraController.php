@@ -2,179 +2,154 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Compra;
-use App\Models\Carrito;
-use App\Models\User;
+use App\Models\DetalleCompra;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CompraController extends Controller
 {
+    // Listar todas las compras
     public function index()
     {
-        $compras = Compra::with('user', 'carrito.productos')->get();
-    
-        // Iterar sobre cada compra y obtener la lista de productos asociada
-        foreach ($compras as $compra) {
-            $productos = $compra->carrito->productos;
-            $compra->ListaProduc = $productos;
-        }
-        $response = [
-            "status" => 200,
-            "message" => "Todos los registros de compras",
-            "data" => $compras
-        ];
-
-        return response()->json($response, 200);
+        $compras = Compra::with('detalles.producto')->get();
+        return response()->json($compras);
     }
-    
 
-    public function show($idCompra)
+    // Mostrar una compra específica
+    public function show($id)
     {
-        $compra = Compra::with('user', 'carrito')->findOrFail($idCompra);
-        
+        $compra = Compra::with('detalles.producto')->find($id);
+        if (is_null($compra)) {
+            return response()->json(['message' => 'Compra no encontrada'], 404);
+        }
         return response()->json($compra);
+    }
 
-        $response=array(
-            "status"=>200,
-            "message"=>"Todos los registro de los productos",
-            "data"=>$data
-        );
-        return response()->json($response,200);
-
-    } 
-
+    // Crear una nueva compra y sus detalles
     public function store(Request $request)
     {
-        $data = $request->input('data', null);
-        
-        if (!$data) {
-            return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
-        }
-        
-        $jsonString = '{"key": "value"}';
-        $array = json_decode($jsonString, true);
-
-        $validator = \Validator::make($data, [
-            
-            'idUsuario' => 'required',
-            'idCarrito' => 'required',
-            'estadoCompra' => 'required',
-            
+        \Log::info('Datos recibidos para crear reserva:', $request->all());
+        $validatedData = $request->validate([
+            'cliente_id' => 'required|integer|exists:clientes,id',
+            'idCarrito'=> 'required|integer', 
+            'estadoCompra'=> 'required',
+            'fecha'=> 'required|date',
+            'detalles' => 'required|array',
+            'detalles.*.idProducto' => 'required|integer|exists:productos,id',
+            'detalles.*.cantidad' => 'required|integer|min:1',
+            'detalles.*.precioUnitario' => 'required|numeric|min:0',
+            'detalles.*.subTotal' => 'required|numeric|min:0',
         ]);
-        
         if ($validator->fails()) {
-            return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' => $validator->errors()], 406);
+            return response()->json([
+                'status' => 406,
+                'message' => 'Datos de la compra inválidos',
+                'errors' => $validator->errors()
+            ], 406);
         }
-        
+
         try {
-            $compra = new Compra();
-            $compra->fill($data);
-        
-            // Asociar el usuario y el carrito
-            $compra->idUsuario = $data['idUsuario'];
-            $compra->idCarrito = $data['idCarrito'];
-            $carrito = Carrito::findOrFail($data['idCarrito']);
-            $compra->ListaProduc = $carrito->productos;
-            $jsonString = "{\"id\":1,\"nombre\":\"Camiseta\",\"precio\":20,\"descripcion\":\"Camiseta de algodón\",\"talla\":\"M\",\"estado\":\"disponible\",\"imagen\":\"camiseta.jpg\",\"created_at\":\"2024-05-15T02:45:19.000000Z\",\"updated_at\":\"2024-05-15T02:45:19.000000Z\",\"pivot\":{\"carrito_id\":1,\"producto_id\":1,\"cantidad\":2}},{\"id\":4,\"nombre\":\"Vestido\",\"precio\":40,\"descripcion\":\"Vestido elegante\",\"talla\":\"S\",\"estado\":\"disponible\",\"imagen\":\"vestido.jpg\",\"created_at\":\"2024-05-15T02:45:19.000000Z\",\"updated_at\":\"2024-05-15T02:45:19.000000Z\",\"pivot\":{\"carrito_id\":1,\"producto_id\":4,\"cantidad\":6}}";
+            $compra = Compra::create([
+                'cliente_id' =>$request->input ('cliente_id'),
+                'idCarrito' =>$request->input ('idCarrito'),
+                'estadoCompra' =>$request->input ('estadoCompra'),
+                'fecha'=>$request->input ('fecha'),
+                ]);
 
-            // Elimina los caracteres de escape (\)
-            $jsonString = stripslashes($jsonString);
-            
-            $data = json_decode($jsonString, true);
-            
-            // Ahora, $data contendrá un array de objetos
-            
-            // Establecer la fecha y la hora automáticamente
-            $compra->fecha = date('Y-m-d');
-            $compra->hora = date('H:i:s');
-        
-            $compra->save();
+                if ($request->has('detalles')) {
+                    foreach ($request->input('detalles') as $detalle) {
+                        
+                        $producto = Produto::findOrFail($detalle['idProducto']);
+                        $precioUnitario = $producto->precio;// Asumo que este dato se obtendrá de algún lugar (ej. tabla Tour)
+                        $subTotal = $precioUnitario * $detalle['cantidad']; // Calcular el subtotal
     
-            return response()->json(['status' => 201, 'message' => 'Compra creada', 'compra' => $compra], 201);
-            
+                        DetalleCompra::create([
+                            'idCompra' => $compra->idCompra,
+                            'idProducto' => $detalle['idProducto'],
+                            'cantidad' => $detalle['cantidad'],
+                            'precioUnitario' => $precioUnitario,
+                            'subTotal' => $subTotal,
+                        ]);
+                    }
+                }
+
+            return response()->json([
+                'status' => 201,
+                'message' => 'Reserva y detalles de reserva creados exitosamente',
+                'reserva' => $compra->load('detalles.producto'),
+            ], 201);
         } catch (\Exception $e) {
-            return response()->json(['status' => 500, 'message' => 'Error al crear la compra: ' . $e->getMessage()], 500);
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al procesar la solicitud',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
-    
 
-public function destroy($id)
-{
-    try {
+    // Actualizar una compra existente
+    public function update(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'cliente_id' => 'integer|exists:clientes,id',
+            'detalles' => 'array',
+            'detalles.*.idProducto' => 'integer|exists:productos,id',
+            'detalles.*.cantidad' => 'integer|min:1',
+            'detalles.*.precioUnitario' => 'numeric|min:0',
+            'detalles.*.subTotal' => 'numeric|min:0',
+        ]);
+
         $compra = Compra::find($id);
-        if (!$compra) {
-            return response()->json(['status' => 404, 'message' => 'Compra no encontrada'], 404);
+        if (is_null($compra)) {
+            return response()->json(['message' => 'Compra no encontrada'], 404);
         }
 
-        $compra->delete();
+        DB::beginTransaction();
 
-        return response()->json(['status' => 200, 'message' => 'Compra eliminada con éxito'], 200);
-    } catch (\Exception $e) {
-        return response()->json(['status' => 500, 'message' => 'Error al eliminar la compra: ' . $e->getMessage()], 500);
-    }
-}
+        try {
+            if (isset($validatedData['cliente_id'])) {
+                $compra->update(['cliente_id' => $validatedData['cliente_id']]);
+            }
 
-public function update(Request $request, $id)
-{
-    $data = $request->input('data', null);
-    
-    if (!$data) {
-        return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
+            if (isset($validatedData['detalles'])) {
+                DetalleCompra::where('idCompra', $compra->id)->delete();
+
+                foreach ($validatedData['detalles'] as $detalle) {
+                    $detalle['idCompra'] = $compra->id;
+                    DetalleCompra::create($detalle);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json($compra->load('detalles.producto'));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error al actualizar la compra', 'error' => $e->getMessage()], 500);
+        }
     }
-    
-    $jsonString = '{"key": "value"}';
-    $array = json_decode($jsonString, true);
-    $validator = \Validator::make($data, [
-        'estadoCompra' => 'required',
-       
-    ]);
-    
-    if ($validator->fails()) {
-        return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' => $validator->errors()], 406);
-    }
-    
-    try {
+
+    // Eliminar una compra
+    public function destroy($id)
+    {
         $compra = Compra::find($id);
-        if (!$compra) {
-            return response()->json(['status' => 404, 'message' => 'Compra no encontrada'], 404);
+        if (is_null($compra)) {
+            return response()->json(['message' => 'Compra no encontrada'], 404);
         }
-        
-        $compra->estadoCompra = $data['estadoCompra'];
-        $compra->save();
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Compra actualizada',
-            'estadoCompra' => $compra->estadoCompra,
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json(['status' => 500, 'message' => 'Error al actualizar la compra: ' . $e->getMessage()], 500);
+        DB::beginTransaction();
+
+        try {
+            DetalleCompra::where('idCompra', $compra->id)->delete();
+            $compra->delete();
+
+            DB::commit();
+
+            return response()->json(['message' => 'Compra eliminada'], 204);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error al eliminar la compra', 'error' => $e->getMessage()], 500);
+        }
     }
-}
-
-public function calcularTotal($idCompra)
-{
-    $compra = Compra::find($idCompra);
-
-    // Verificar si se encontró la compra
-    if (!$compra) {
-
-        return null;
-    }
-
-    // Obtener los productos del carrito asociado a la compra
-    $productos = $compra->carrito->productos;
-
-    $total = 0;
-    // Iterar sobre los productos y calcular el subtotal
-    foreach ($productos as $producto) {
-        $precio = $producto->precio;
-        $cantidad = $producto->pivot->cantidad;
-        $subtotal = $precio * $cantidad;
-        $total += $subtotal;
-    }
-
-    return $total;
-}
-
 }
