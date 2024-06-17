@@ -15,11 +15,9 @@ return new class extends Migration
             $table->unsignedBigInteger('idCompra')->primary()->autoIncrement();
             $table->unsignedBigInteger('idUsuario');
             $table->unsignedBigInteger('idCarrito');
-            $table->text('ListaProduc');
             $table->string('estadoCompra');
             $table->date('fecha');
-            $table->time('hora');
-            
+           
             // Claves foráneas
             $table->foreign('idUsuario')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('idCarrito')->references('id')->on('carritos')->onDelete('cascade');

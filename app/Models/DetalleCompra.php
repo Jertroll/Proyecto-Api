@@ -5,35 +5,30 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Compra extends Model
+class DetalleCompra extends Model
 {
     use HasFactory;
-    protected $table='compra';
+    protected $table='detalleCompra';
 
     protected $fillable = [
         'idCompra',
-        'idUsuario',
-        'idCarrito',
-        'estadoCompra',
-        'fecha',
+        'idProducto',
+        'cantidad',
+        'precioUnitario',
+        'subTotal',
     ];
 
     protected $primaryKey = 'idCompra';
 
     public $timestamps = false;
 
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'idUsuario');
-    }
-    public function carrito()
-    {
-        return $this->belongsTo(Carrito::class, 'idCarrito');
-    }
-
     public function compra()
     {
         return $this->belongsTo(Compra::class, 'idCompra');
+    }
+    public function producto()
+    {
+        return $this->hasOne(Tour::class,'idProducto');
     }
 
 }
