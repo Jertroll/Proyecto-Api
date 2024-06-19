@@ -70,7 +70,7 @@ class UserController extends Controller
                 $user->cedula=$data['cedula'];
                 $user->rol=$data['rol'];
                 $user->email=$data['email'];
-                $user->password=hash('sha256',$data['password']);
+                $user->password=password_hash($data['password'],PASSWORD_DEFAULT);
                 $user->imagen=$data['imagen'];
 
                 $user->save();
@@ -170,6 +170,7 @@ class UserController extends Controller
 
     
      public function login(Request $request){
+        \Log::info('Datos recibidos:', $request->all());
         $data_input=$request->input('data',null);
         $data=json_decode($data_input,true);
         $data=array_map('trim',$data);

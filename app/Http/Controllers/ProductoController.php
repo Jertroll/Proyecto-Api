@@ -182,6 +182,30 @@ class ProductoController extends Controller
             ], 400);
         }
     }
+    public function buscarNombre($nombre)
+    {
+        if (empty($nombre)) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'No se proporcionó un nombre para buscar',
+            ], 400);
+        }
+    
+        $producto = Producto::where('nombre', 'like', '%' . $nombre . '%')->get();
+    
+        if ($producto->isEmpty()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'No se encontraron productos con el nombre proporcionado',
+            ], 404);
+        }
+    
+        return response()->json([
+            'status' => 200,
+            'message' => 'Produtos encontrados',
+            'data' => $producto
+        ], 200);
+    }
     
 
     public function uploadImage(Request $request){
@@ -224,6 +248,7 @@ class ProductoController extends Controller
         }
         return response()->json($response,$response['status']);
     }
+
     public function updateImagen(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -258,5 +283,6 @@ class ProductoController extends Controller
 
         return response()->json($response, 200);
     }
+
 
 }

@@ -13,8 +13,11 @@ class Producto extends Model
     
     
     public function carrito(){
-        return $this->belongsToMany(Carrito::class, 'producto_carrito', 'producto_id', 'carrito_id')
-                    ->withPivot('cantidad'); // Incluir la cantidad de cada producto en el carrito
+        return $this->belongsToMany(Carrito::class, 'producto_carrito', 'producto_id', 'carrito_id'); 
+    }
+    public function detalleCompra()
+    {
+        return $this->belongsTo(DetalleReserva::class, 'idProducto', 'id');
     }
  
 }

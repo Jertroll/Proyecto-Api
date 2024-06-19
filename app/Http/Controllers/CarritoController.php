@@ -43,57 +43,38 @@ class CarritoController extends Controller
 
     
     public function store(Request $request){
-        $data = $request->input('data', null);
+        \Log::info('Encabezados recibidos:', $request->headers->all());
+        \Log::info('Cuerpo de la solicitud:', $request->all());
     
-        if ($data) {
-            array_walk_recursive($data, function (&$value) { //recorre el data 
-                $value = trim($value); // elimina los espacios en blanco trim
-            });
+        $bearerToken = $request->header('bearertoken');
+        if (!$bearerToken) {
+            return response()->json(['status' => 400, 'message' => 'Token no proporcionado'], 400);
+        }
+        $jwt = new JwtAuth();
+        $userId = $jwt->checkToken($bearerToken, true);
     
-            $rules = [
-                'user_id' => 'required',
-                '_productos.*.id' => 'required',
-                '_productos.*.cantidad' => 'required|numeric|min:1',
-            ];
-            //Validar reglas 
-            $isValid = \validator($data, $rules);
-            //  Creacion del carrito
-            if (!$isValid->fails()) {
-                $carrito = new Carrito();
-                $carrito->user_id = $data['user_id'];
-                $carrito->save();
+        $carrito = Carrito::where(['user_id'=>$userId->iss])->first();
     
-                if (isset($data['_productos']) && is_array($data['_productos'])) {
-                   
-                    foreach ($data['_productos'] as $producto) {
-                        // Adjuntar cada producto al carrito con su cantidad respectiva
-                        $carrito->productos()->attach($producto['id'], ['cantidad' => $producto['cantidad'], 'carrito_id' => $carrito->id]);
-                    }
-                    
-                }
-    
-                $response = [
-                    'status' => 201,
-                    'message' => 'Carrito creado',
-                    'category' => $carrito
-                ];
-            } else {
-                $response = [
-                    'status' => 406,
-                    'message' => 'Datos inválidos',
-                    'errors' => $isValid->errors()
-                ];
-            }
-        } else {
+        if ($carrito) {
             $response = [
-                'status' => 400,
-                'message' => 'No se encontró el objeto data'
+                'status' => 201,
+                'category' => $carrito
+            ];
+        } else {
+            $carrito = new Carrito();
+            $carrito->user_id = $userId; // Asegúrate de asignar el user_id aquí
+            $carrito->save();
+    
+            $response = [
+                'status' => 201,
+                'message' => 'Carrito creado',
+                'category' => $carrito
             ];
         }
     
         return response()->json($response, $response['status']);
     }
-
+    
 
     public function destroy($id){
         if(isset($id)){
@@ -128,7 +109,7 @@ class CarritoController extends Controller
     
             $rules = [
                 '_productos.*.id' => 'required',
-                '_productos.*.cantidad' => 'required|numeric|min:1',
+
             ];
     
             $isValid = \validator($data, $rules);
@@ -176,62 +157,69 @@ class CarritoController extends Controller
     }
     
     
-    public function addProductToCart(Request $request, $id){
-        dd($request->all()); 
+    public function addProductToCart(Request $request) {
+        $token = $request->header('bearertoken');
         
-        $producto_id = $request->input('producto_id');
-        $cantidad = $request->input('cantidad');
+        if (!$token) {
+            return response()->json([
+                'status' => 401,
+                'message' => 'Token inválido o no proporcionado.'
+            ], 401);
+        }
+        
+        $jwt = new JwtAuth();
+        $userId = $jwt->checkToken($token, true)->iss;
     
-        // Validar los datos
-        $rules = [
-            'producto_id' => 'required|numeric', // Ajusta el nombre del campo según tu necesidad
-            'cantidad' => 'required|numeric|min:1',
-        ];
+        // Verificar si el carrito pertenece al usuario
+        $carrito = Carrito::where('user_id', $userId)->first();
     
-        $validator = \validator($request->all(), $rules);
-    
-        if ($validator->fails()) {
-            // Si la validación falla, retorna un mensaje de error
-            $response = [
-                'status' => 406,
-                'message' => 'Datos enviados no cumplen con las reglas establecidas',
-                'errors' => $validator->errors(),
+        if ($carrito) {
+            $rules = [
+                'producto_id' => 'required|numeric|exists:_productos,id',
             ];
-        } else {
-            // Buscar el carrito por su ID
-            $carrito = Carrito::find($id);
     
-            if (!$carrito) {
-                // Si el carrito no existe, retorna un mensaje de error
-                $response = [
-                    'status' => 404,
-                    'message' => 'El carrito no existe',
-                ];
+            $validator = \Validator::make($request->all(), $rules);
+    
+            if ($validator->fails()) {
+                // Si la validación falla, retorna un mensaje de error
+                return response()->json([
+                    'status' => 406,
+                    'message' => 'Datos enviados no cumplen con las reglas establecidas',
+                    'errors' => $validator->errors(),
+                ], 406);
+            }
+    
+            $productoId = $request->input('producto_id');
+    
+            // Verificar si el producto ya está en el carrito
+            $productoExistente = $carrito->productos()->where('producto_id', $productoId)->exists();
+    
+            if ($productoExistente) {
+                // Si el producto ya está en el carrito, devolver un mensaje
+                return response()->json([
+                    'status' => 409,
+                    'message' => 'El producto ya está en el carrito',
+                ], 409);
             } else {
-                // Verificar si el producto ya está en el carrito
-                $productoExistente = $carrito->productos()->where('producto_id', $producto_id)->first();
-    
-                if ($productoExistente) {
-                    // Si el producto ya está en el carrito, actualizar la cantidad
-                    $productoExistente->pivot->cantidad += $cantidad;
-                    $productoExistente->pivot->save();
-                } else {
-                    // Si el producto no está en el carrito, agregarlo con la cantidad especificada
-                    $carrito->productos()->attach($producto_id, ['cantidad' => $cantidad]);
-                }
+                // Si el producto no está en el carrito, agregarlo
+                $carrito->productos()->attach($productoId);
     
                 // Respuesta de éxito
-                $response = [
+                return response()->json([
                     'status' => 200,
                     'message' => 'Producto agregado al carrito satisfactoriamente',
-                ];
+                ], 200);
             }
+        } else {
+            // El carrito no pertenece al usuario, devolver un error
+            return response()->json([
+                'status' => 403,
+                'message' => 'No estás autorizado para modificar este carrito.',
+            ], 403);
         }
-    
-        return response()->json($response, $response['status']);
     }
     
- 
+
     
     public function removeProductFromCart(Request $request, $id) {
         // Asegúrate de que 'producto_id' se obtiene del request correctamente
@@ -304,6 +292,40 @@ class CarritoController extends Controller
                 return response()->json(['status' => 500, 'message' => 'Error al vaciar el carrito: ' . $e->getMessage()], 500);
             }
         }
+
+        public function obtenerCarrito(Request $request)
+    {
+        // Obtener el token del header
+        $token = $request->header('Authorization');
+        $jwt = new JwtAuth();
+        $user = $jwt->checkToken($token, true);
+
+        if (!$user) {
+            return response()->json([
+                'status' => 401,
+                'message' => 'Token inválido o no proporcionado.'
+            ], 401);
+        }
+
+        // Obtener el ID del usuario del token decodificado
+        $userId = $user->iss;
+
+        // Buscar un carrito existente asociado al usuario
+        $carrito = Carrito::where('user_id', $userId)->first();
+
+        if ($carrito) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Carrito existente encontrado',
+                'carrito_id' => $carrito->id
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'No existe un carrito asociado a este usuario.'
+            ], 404);
+        }
+    }
 
 }
 
