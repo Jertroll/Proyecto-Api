@@ -18,7 +18,7 @@ class DetalleCompra extends Model
         'subTotal',
     ];
 
-    protected $primaryKey = 'idCompra';
+    protected $primaryKey = 'idDetalle';
 
     public $timestamps = false;
 
@@ -28,7 +28,7 @@ class DetalleCompra extends Model
     }
     public function producto()
     {
-        return $this->hasOne(Tour::class,'idProducto');
+        return $this->hasOne(Producto::class,'idProducto');
     }
 
 }

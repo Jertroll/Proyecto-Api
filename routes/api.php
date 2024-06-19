@@ -19,8 +19,9 @@ use App\Http\Middleware\UserMiddleware;
 Route::prefix('v1')->group(function () {
 
     Route::resource('/producto', ProductoController::class, ['except' => ['create', 'edit']]);
-      Route::post('/user/login', [UserController::class, 'login']);
+      Route::post('/login', [UserController::class, 'login']);
       Route::post('/user/register', [UserController::class, 'store']);
+     
 
       Route::get('/productos/{id}',[ProductoController::class,'show']);
       Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']]);
@@ -29,11 +30,15 @@ Route::prefix('v1')->group(function () {
       Route::put('/producto/{id}/update-imagen', [ProductoController::class, 'updateImagen'])->name('producto.update-imagen');
       Route::resource('detalleCompra', DetalleCompraController::class);
       Route::get('/producto/buscar/{nombre}', [ProductoController::class, 'buscarNombre']);
+
       Route::post('/carrito/store', [CarritoController::class, 'store']);
+      Route::get('/carrito/obtener', [CarritoController::class, 'obtenerCarrito']);
+      Route::post('/agregarCarrito', [CarritoController::class, 'addProductToCart']);
 
       Route::post('/user/upload',[UserController::class,'uploadImage']);
       Route::get('/user/getimage/{filename}',[UserController::class,'getImage']);
       Route::put('/user/{id}/update-imagen', [UserController::class, 'updateImagen'])->name('user.update-imagen');
+
       //rutas automaticas Restful Admin
       Route::group(['prefix' => '/admin'], function () {
        
@@ -65,7 +70,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/carrito/{id}/vaciarCarrito', [CarritoController::class, 'vaciarCarrito'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
         Route::get('/carritos/{id}', [CarritoController::class, 'show'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
         Route::put('/carritos/{id}', [CarritoController::class, 'update'])->middleware([ApiAuthMiddleware::class, UserMiddleware::class]);
-
+       
 
         //Usuario
         

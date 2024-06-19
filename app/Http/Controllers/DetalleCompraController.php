@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\DetalleCompra;
 use Illuminate\Http\Request;
+use App\Models\Compra;
+use App\Models\Producto;
 
 class DetalleCompraController extends Controller
 {
@@ -22,6 +24,41 @@ class DetalleCompraController extends Controller
             return response()->json(['message' => 'Detalle de compra no encontrado'], 404);
         }
         return response()->json($detalle);
+    }
+    public function store(Request $request)
+    {
+        \Log::info('Datos recibidos para crear detalle de compra:', $request->all());
+        
+        $validatedData = $request->validate([
+            'idCompra' => 'required|integer|exists:compra,idCompra',
+            'detalles' => 'required|array',
+            'detalles.*.idProducto' => 'required|integer|exists:_productos,id',
+            'detalles.*.cantidad' => 'required|integer|min:1',
+        ]);
+
+        $detallesCompra = [];
+        
+        foreach ($validatedData['detalles'] as $detalle) {
+            $producto = Producto::findOrFail($detalle['idProducto']);
+            $precioUnitario = $producto->precio;
+            $subTotal = $precioUnitario * $detalle['cantidad'];
+
+            $detalleCompra = DetalleCompra::create([
+                'idCompra' => $validatedData['idCompra'],
+                'idProducto' => $detalle['idProducto'],
+                'cantidad' => $detalle['cantidad'],
+                'precioUnitario' => $precioUnitario,
+                'subTotal' => $subTotal,
+            ]);
+
+            $detallesCompra[] = $detalleCompra;
+        }
+
+        return response()->json([
+            'status' => 201,
+            'message' => 'Detalle(s) de compra creados exitosamente',
+            'detallesCompra' => $detallesCompra,
+        ], 201);
     }
 
 

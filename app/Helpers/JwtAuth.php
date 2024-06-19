@@ -12,11 +12,9 @@ class JwtAuth{
         $this->key="ELperrocr"; //Llave privada
     }
     public function getToken($email,$password){
-        $pass=hash('sha256',$password);
-        //var_dump($pass);
-        $user=User::where(['email'=>$email,'password'=>$password])->first();
+        $user=User::where(['email'=>$email])->first();
         //var_dump($user);
-        if(is_object($user)){
+        if(is_object($user) && password_verify($password,$user->password)){
             /**Payload Llave publica*/
             $token=array(
                 'iss'=>$user->id,
