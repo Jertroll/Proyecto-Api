@@ -13,6 +13,7 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\UserMiddleware;
 
 Route::prefix('v1')->group(function () {
+    Route::post('/agregarCarrito', [CarritoController::class, 'addProductToCart'])->middleware(ApiAuthMiddleware::class);
     // Rutas públicas de productos
     Route::get('/productos', [ProductoController::class, 'index']);
     Route::get('/productos/{id}', [ProductoController::class, 'show']);
@@ -26,9 +27,19 @@ Route::prefix('v1')->group(function () {
     Route::post('/user/login', [UserController::class, 'login']);
     Route::post('/user/register', [UserController::class, 'store']);
     Route::get('/user/getidentity', [UserController::class, 'getIdentity'])->middleware(ApiAuthMiddleware::class);
+
+    // Rutas de productos
+    Route::post('/producto/upload', [ProductoController::class, 'uploadImage']);
+    Route::get('/producto/getimage/{filename}', [ProductoController::class, 'getImage']);
+    Route::put('/producto/{id}/update-imagen', [ProductoController::class, 'updateImagen'])->name('producto.update-imagen');
+
+    // Rutas de usuario para imágenes
     Route::post('/user/upload', [UserController::class, 'uploadImage']);
     Route::get('/user/getimage/{filename}', [UserController::class, 'getImage']);
     Route::put('/user/{id}/update-imagen', [UserController::class, 'updateImagen'])->name('user.update-imagen');
+
+    // Rutas automáticas Restful para Compra
+    Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']]);
 
     // Rutas de compra y carrito
     Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']]);
