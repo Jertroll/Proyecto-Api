@@ -20,9 +20,14 @@ Route::prefix('v1')->group(function () {
     Route::post('/producto/upload', [ProductoController::class, 'uploadImage']);
     Route::get('/producto/getimage/{filename}', [ProductoController::class, 'getImage']);
     Route::put('/producto/{id}/update-imagen', [ProductoController::class, 'updateImagen'])->name('producto.update-imagen');
+
     Route::resource('/producto', ProductoController::class, ['except' => ['create', 'edit']]);
-    Route::get('/producto/buscar/{nombre}', [ProductoController::class, 'buscarNombre']);
     
+    Route::get('/producto/buscar/{nombre}', [ProductoController::class, 'buscarNombre']);
+
+
+
+
     // Autenticación de usuario
     Route::post('/user/login', [UserController::class, 'login']);
     Route::post('/user/register', [UserController::class, 'store']);
