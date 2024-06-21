@@ -36,54 +36,48 @@ class BillController extends Controller
 
     public function store(Request $request)
     {
-      $data = $request->input('data', null);
-      
-          if (!$data) {
-              return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
-          }
+        $bearerToken = $request->header('bearertoken');
+        if (!$bearerToken) {
+            return response()->json(['status' => 400, 'message' => 'Token no proporcionado'], 400);
+        }
+   
+  
+        $jwt = new JwtAuth();
+        $decodedToken = $jwt->checkToken($bearerToken, true);
 
-      $data = json_decode($data, true);
-      $validator = \Validator::make($data, [
-          'id' => 'required',
-          'idUsuario' => 'required',
-          'nomTienda' => 'required',
-          'fechaEmision' => 'required',
-          'metodoPago' => 'required',
-          'total' => '',
-          'idCompra' => 'required',
-      ]);
-      
-      if ($validator->fails()) {
-          return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' => $validator->errors()], 406);
-      }
-      
-      try {
-          $bill = new Bill();
-          $bill->fill($data);
-        
-          
-          // Obtener la compra correspondiente al idCompra
-          $compra = Compra::findOrFail($data['idCompra']);
-      
-          $compraController = new CompraController();
-          
-          // Calcular el total de la compra
-          $total = $compraController->calcularTotal($data['idCompra']);
-  
-          // Asignar el total a la factura
-          $bill->total = $total;
-  
-          // Aquí obtienes el usuario asociado y lo guardas en el campo idUsuario
-  
-          $user = User::findOrFail($data['idUsuario']);
-          $bill->user()->associate($user);
-          $bill->compra()->associate($compra);
-          $bill->save();
-      
-          return response()->json(['status' => 201, 'message' => 'Factura creada', 'bill' => $bill], 201);
-      } catch (\Exception $e) {
-          return response()->json(['status' => 500, 'message' => 'Error al crear la factura: ' . $e->getMessage()], 500);
-      }
+        if (!$decodedToken || !isset($decodedToken->iss)) {
+            return response()->json(['status' => 400, 'message' => 'Token inválido'], 400);
+        }
+        $userId = $decodedToken->iss;
+
+        $data = $request->validate([
+            'nomTienda' => 'required|integer',
+            'fechaEmision' => 'required|date',
+            'idCompra' => 'required|integer|exists:compra,idCompra',
+        ]);
+
+        $compra = Compra::with('detalles')->findOrFail($data['idCompra']);
+        $subTotal = 0;
+        foreach ($compra->detalles as $detalle) {
+            $subTotal += $detalle->cantidad * $detalle->precioUnitario;
+        }
+        $impuesto = $subTotal * 0.13; // Suponiendo un impuesto del 16%
+        $total = $subTotal + $impuesto;
+     
+        $bill = Bill::create([
+            'idUsuario'=>$compra->idUsuario=$userId,
+            'nomTienda' =>$request->input('nomTienda'),
+            'fechaEmision' => $request->input('fechaEmision'),
+            'idCompra'=>$compra->idCompra,
+            'subTotal' => $subTotalConDescuento,
+            'total' => $total
+        ]);
+        return response()->json([
+            'status' => 201,
+            'message' => 'Factura creada satisfactoriamente',
+            'factura' => $factura,
+        ], 201);
+
   }
 
     public function destroy($id)
