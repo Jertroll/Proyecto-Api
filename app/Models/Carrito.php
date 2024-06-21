@@ -9,7 +9,7 @@ class Carrito extends Model
 {
     use HasFactory;
     protected $table='carritos';
-    protected $fillable=['idCarrito,_productos,user_id'];
+    protected $fillable=['idCarrito','_productos','user_id'];
 
     public function user(){
         return $this->belongsTo(User::class,'user_id');

@@ -6,6 +6,8 @@ use App\Models\DetalleCompra;
 use Illuminate\Http\Request;
 use App\Models\Compra;
 use App\Models\Producto;
+use Illuminate\Support\Facades\Validator; 
+use Illuminate\Support\Facades\Log;
 
 class DetalleCompraController extends Controller
 {
@@ -27,37 +29,34 @@ class DetalleCompraController extends Controller
     }
     public function store(Request $request)
     {
-        \Log::info('Datos recibidos para crear detalle de compra:', $request->all());
-        
-        $validatedData = $request->validate([
+        // Verificar y logear los datos recibidos
+        Log::info('Datos recibidos para crear detalle de compra:', $request->all());
+
+        // Decodificar el JSON si viene dentro de un campo 'data'
+        $data = $request->json()->all();
+
+        // Validar los datos decodificados
+        $validatedData = Validator::make($data, [
             'idCompra' => 'required|integer|exists:compra,idCompra',
-            'detalles' => 'required|array',
-            'detalles.*.idProducto' => 'required|integer|exists:_productos,id',
-            'detalles.*.cantidad' => 'required|integer|min:1',
+            'idProducto' => 'required|integer|exists:_productos,id',
+            'cantidad' => 'required|integer|min:1',
+            'precioUnitario' => 'required|integer',
+            'subTotal' => 'required|integer',
+        ])->validate();
+
+        // Procesar los detalles de compra
+        $detalleCompra = DetalleCompra::create([
+            'idCompra' => $validatedData['idCompra'],
+            'idProducto' => $validatedData['idProducto'],
+            'cantidad' => $validatedData['cantidad'],
+            'precioUnitario' => $validatedData['precioUnitario'],
+            'subTotal' => $validatedData['subTotal'],
         ]);
-
-        $detallesCompra = [];
-        
-        foreach ($validatedData['detalles'] as $detalle) {
-            $producto = Producto::findOrFail($detalle['idProducto']);
-            $precioUnitario = $producto->precio;
-            $subTotal = $precioUnitario * $detalle['cantidad'];
-
-            $detalleCompra = DetalleCompra::create([
-                'idCompra' => $validatedData['idCompra'],
-                'idProducto' => $detalle['idProducto'],
-                'cantidad' => $detalle['cantidad'],
-                'precioUnitario' => $precioUnitario,
-                'subTotal' => $subTotal,
-            ]);
-
-            $detallesCompra[] = $detalleCompra;
-        }
 
         return response()->json([
             'status' => 201,
-            'message' => 'Detalle(s) de compra creados exitosamente',
-            'detallesCompra' => $detallesCompra,
+            'message' => 'Detalle de compra creado exitosamente',
+            'detalleCompra' => $detalleCompra,
         ], 201);
     }
 
