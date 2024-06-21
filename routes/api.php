@@ -12,7 +12,7 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\UserMiddleware;
 
 Route::prefix('v1')->group(function () {
-
+    Route::post('/agregarCarrito', [CarritoController::class, 'addProductToCart'])->middleware(ApiAuthMiddleware::class);
     // Rutas públicas de productos
     Route::get('/productos', [ProductoController::class, 'index']);
     Route::get('/productos/{id}', [ProductoController::class, 'show']);
