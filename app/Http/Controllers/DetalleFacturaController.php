@@ -48,4 +48,20 @@ class DetalleFacturaController extends Controller
     return response()->json(['status' => 200, 'message' => 'Detalle de factura actualizado', 'detalleFactura' => $detalleFactura], 200);
 }
 
+public function destroy($id)
+{
+    try {
+        $detalle = DetalleFactura::find($id);
+        if (!$detalle) {
+            return response()->json(['status' => 404, 'message' => 'Detalle Factura no encontrada'], 404);
+        }
+
+        $detalle->delete();
+
+        return response()->json(['status' => 200, 'message' => 'Detalle Factura eliminada con éxito'], 200);
+    } catch (\Exception $e) {
+        return response()->json(['status' => 500, 'message' => 'Error al eliminar la Detalle Factura: ' . $e->getMessage()], 500);
+    }
+}
+
 }
