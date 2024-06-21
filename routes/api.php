@@ -95,4 +95,5 @@ Route::prefix('v1')->group(function () {
             Route::get('/detalle_facturas/{idDetalleFactura}', [DetalleFacturaController::class, 'show']);
         });
     });
+    
 });
