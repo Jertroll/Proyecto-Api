@@ -7,6 +7,7 @@ use Illuminate\Http\Response;
 use App\Helpers\JwtAuth;
 use App\Models\Carrito;
 use App\Models\Producto;
+use Illuminate\Support\Facades\Log;
 
 class CarritoController extends Controller
 {
@@ -259,10 +260,10 @@ class CarritoController extends Controller
     
 
     
-    public function removeProductFromCart(Request $request)
+    public function removeProductFromCart(Request $request, $productoId)
 {
     $token = $request->header('bearertoken');
-        
+    
     if (!$token) {
         return response()->json([
             'status' => 401,
@@ -270,60 +271,46 @@ class CarritoController extends Controller
         ], 401);
     }
     
-    $jwt = new JwtAuth();
-    $userId = $jwt->checkToken($token, true)->iss;
-
-    $carrito = Carrito::where('user_id', $userId)->first();
-    
-    if (!$carrito) {
-        return response()->json([
-            'status' => 404,
-            'message' => 'El carrito no existe.'
-        ], 404);
-    }
-
-    // Validar los datos de entrada
-    $validator = Validator::make($request->all(), [
-        'producto_id' => 'required|numeric|exists:_productos,id',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => 400,
-            'message' => 'Datos de entrada no válidos.',
-            'errors' => $validator->errors(),
-        ], 400);
-    }
-
-    $producto_id = $request->input('producto_id');
-
     try {
-        // Verificar si el producto está en el carrito del usuario
-        $productoExistente = $carrito->productos()->where('producto_id', $producto_id)->first();
+        // Decodificar el token y obtener el usuario autenticado
+        $jwt = new JwtAuth();
+        $userId = $jwt->checkToken($token, true)->iss;
+        
+        // Obtener el carrito del usuario
+        $carrito = Carrito::where('user_id', $userId)->first();
 
-        if (!$productoExistente) {
+        if (!$carrito) {
             return response()->json([
                 'status' => 404,
-                'message' => 'El producto no está en el carrito.'
+                'message' => 'Carrito no encontrado para este usuario'
+            ], 404);
+        }
+
+        // Verificar si el producto está en el carrito del usuario
+        if (!$carrito->productos()->where('producto_carrito.producto_id', $productoId)->exists()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Producto no encontrado en el carrito'
             ], 404);
         }
 
         // Eliminar el producto del carrito
-        $carrito->productos()->detach($producto_id);
+        $carrito->productos()->detach($productoId);
 
         return response()->json([
             'status' => 200,
-            'message' => 'Producto eliminado del carrito satisfactoriamente.'
+            'message' => 'Producto eliminado del carrito satisfactoriamente'
         ], 200);
-
     } catch (\Exception $e) {
+        Log::error("Error al eliminar producto del carrito: " . $e->getMessage());
+        
         return response()->json([
             'status' => 500,
-            'message' => 'Error al eliminar el producto del carrito.',
-            'error' => $e->getMessage(),
+            'message' => 'Error al eliminar producto del carrito',
+            'error' => $e->getMessage()
         ], 500);
     }
 }
 
-        
+    
 }

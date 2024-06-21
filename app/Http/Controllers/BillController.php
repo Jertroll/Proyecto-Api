@@ -25,8 +25,79 @@ class BillController extends Controller
     // Crear una nueva factura
     public function store(Request $request)
     {
+        $bearerToken = $request->header('bearertoken');
+        if (!$bearerToken) {
+            return response()->json(['status' => 400, 'message' => 'Token no proporcionado'], 400);
+        }
+   
+  
+        $jwt = new JwtAuth();
+        $decodedToken = $jwt->checkToken($bearerToken, true);
+
+        if (!$decodedToken || !isset($decodedToken->iss)) {
+            return response()->json(['status' => 400, 'message' => 'Token inválido'], 400);
+        }
+        $userId = $decodedToken->iss;
+
         $data = $request->validate([
+            'nomTienda' => 'required|integer',
+            'fechaEmision' => 'required|date',
             'idCompra' => 'required|integer|exists:compra,idCompra',
+        ]);
+
+        $compra = Compra::with('detalles')->findOrFail($data['idCompra']);
+        $subTotal = 0;
+        foreach ($compra->detalles as $detalle) {
+            $subTotal += $detalle->cantidad * $detalle->precioUnitario;
+        }
+        $impuesto = $subTotal * 0.13; 
+        $total = $subTotal + $impuesto;
+     
+        $bill = Bill::create([
+            'idUsuario'=>$compra->idUsuario=$userId,
+            'nomTienda' =>$request->input('nomTienda'),
+            'fechaEmision' => $request->input('fechaEmision'),
+            'idCompra'=>$compra->idCompra,
+            'subTotal' => $subTotalConDescuento,
+            'total' => $total
+        ]);
+        return response()->json([
+            'status' => 201,
+            'message' => 'Factura creada satisfactoriamente',
+            'factura' => $factura,
+        ], 201);
+
+  }
+
+    public function destroy($id)
+{
+    try {
+        $bill = Bill::find($id);
+        if (!$bill) {
+            return response()->json(['status' => 404, 'message' => 'Factura no encontrada'], 404);
+        }
+
+        $bill->delete();
+
+        return response()->json(['status' => 200, 'message' => 'Factura eliminada con éxito'], 200);
+    } catch (\Exception $e) {
+        return response()->json(['status' => 500, 'message' => 'Error al eliminar la factura: ' . $e->getMessage()], 500);
+    }
+}
+
+    public function update(Request $request, $id)
+    {
+        $data = $request->input('data', null);
+    
+        if (!$data) {
+            return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
+        }
+    
+        $data = json_decode($data, true);
+        $validator = \Validator::make($data, [
+            'nomTienda' => 'required',
+            'metodoPago' => 'required',
+            
         ]);
     
         try {
@@ -90,52 +161,5 @@ class BillController extends Controller
         return $subtotal;
     }
 
-    // Eliminar una factura por su ID
-    public function destroy($idBill)
-    {
-        $Bill = Bill::find($idBill);
 
-        if ($Bill) {
-            $Bill->delete();
-
-            return response()->json([
-                'status' => 200,
-                'message' => 'Bill eliminada correctamente'
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Bill no encontrada'
-            ], 404);
-        }
-    }
-
-    // Actualizar una Bill por su ID
-    public function update(Request $request, $idBill)
-    {
-        $data = $request->validate([
-            'total' => 'required|numeric',
-            'fechaEmision' => 'required|date'
-        ]);
-
-        $Bill = Bill::find($idBill);
-
-        if ($Bill) {
-            $Bill->update([
-                'total' => $data['total'],
-                'fechaEmision' => $data['fechaEmision']
-            ]);
-
-            return response()->json([
-                'status' => 200,
-                'message' => 'Datos de la Bill actualizados satisfactoriamente',
-                'Bill' => $Bill
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Bill no encontrada'
-            ], 404);
-        }
-    }
 }
