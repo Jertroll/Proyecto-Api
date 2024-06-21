@@ -26,7 +26,7 @@ class JwtAuth{
                 'cedula'=>$user->cedula,
                 'rol'=>$user->rol,
                 'iat'=>time(),
-                'exp'=>time()+(2000)
+                'exp'=>time()+(20000)
             );
             $data=JWT::encode($token,$this->key,'HS256');
         }else{
