@@ -24,17 +24,21 @@ Route::prefix('v1')->group(function () {
      
 
       Route::get('/productos/{id}',[ProductoController::class,'show']);
-      Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']]);
       Route::post('/producto/upload',[ProductoController::class,'uploadImage']);
       Route::get('/producto/getimage/{filename}',[ProductoController::class,'getImage']);
       Route::put('/producto/{id}/update-imagen', [ProductoController::class, 'updateImagen'])->name('producto.update-imagen');
-      Route::resource('detalleCompra', DetalleCompraController::class);
+      Route::resource('detalleCompra', DetalleCompraController::class, ['except' => ['create', 'edit']]);
       Route::get('/producto/buscar/{nombre}', [ProductoController::class, 'buscarNombre']);
 
       Route::post('/carrito/store', [CarritoController::class, 'store']);
-      Route::get('/carrito/obtener', [CarritoController::class, 'obtenerCarrito']);
       Route::post('/agregarCarrito', [CarritoController::class, 'addProductToCart']);
+      Route::get('/user/{id}', [UserController::class, 'show']);
+      Route::get('/obtenerProductosCarrito',[CarritoController::class, 'obtenerProductosCarrito']);
 
+      Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']]);
+      Route::delete('carrito/{carritoId}/eliminarProductosComprados', [CompraController::class, 'eliminarProductosComprados']);
+      Route::delete('carrito/remove-producto', [CompraController::class, 'removeProductFromCart']);
+      
       Route::post('/user/upload',[UserController::class,'uploadImage']);
       Route::get('/user/getimage/{filename}',[UserController::class,'getImage']);
       Route::put('/user/{id}/update-imagen', [UserController::class, 'updateImagen'])->name('user.update-imagen');
@@ -47,7 +51,7 @@ Route::prefix('v1')->group(function () {
         //Route::resource('/producto', ProductoController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
         Route::resource('/carrito', CarritoController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
         Route::resource('/bill', BillController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
-        Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
+        //Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
         Route::resource('/detalleFactura', DetalleFacturaController::class, ['except' => ['create', 'edit']])->middleware([ApiAuthMiddleware::class, AdminMiddleware::class]);
 
 
