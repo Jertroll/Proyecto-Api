@@ -3,151 +3,139 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use App\Models\Bill;
-use App\Models\User;
 use App\Models\Compra;
-use App\Helpers\JwtAuth;
-
-
 
 class BillController extends Controller
 {
+    // Obtener todos los registros de factura
     public function index()
     {
-        $facturas=Bill::with('user','compra')->get();
-        $response=array(
-            "status"=>200,
-            "message"=>"Todos los registro de facturas",
-            "data"=>$facturas
-        );
-        return response()->json($response,200);
-    }
-    public function show($id)
-    {
-        try {
-            $bill = Bill::with('user', 'compra')->findOrFail($id);
-            return response()->json(['status' => 200, 'message' => 'Factura encontrada', 'bill' => $bill], 200);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 404, 'message' => 'Factura no encontrada'], 404);
-        }
-    }
-    
+        $Bills = Bill::all();
+        
+        $response = [
+            "status" => 200,
+            "message" => "Todos los registros de las Bills",
+            "data" => $Bills
+        ];
 
+        return response()->json($response, 200);
+    }
+
+    // Crear una nueva factura
     public function store(Request $request)
     {
-      $data = $request->input('data', null);
-      
-          if (!$data) {
-              return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
-          }
-
-      $data = json_decode($data, true);
-      $validator = \Validator::make($data, [
-          'id' => 'required',
-          'idUsuario' => 'required',
-          'nomTienda' => 'required',
-          'fechaEmision' => 'required',
-          'metodoPago' => 'required',
-          'total' => '',
-          'idCompra' => 'required',
-      ]);
-      
-      if ($validator->fails()) {
-          return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' => $validator->errors()], 406);
-      }
-      
-      try {
-          $bill = new Bill();
-          $bill->fill($data);
-        
-          
-          // Obtener la compra correspondiente al idCompra
-          $compra = Compra::findOrFail($data['idCompra']);
-      
-          $compraController = new CompraController();
-          
-          // Calcular el total de la compra
-          $total = $compraController->calcularTotal($data['idCompra']);
-  
-          // Asignar el total a la factura
-          $bill->total = $total;
-  
-          // Aquí obtienes el usuario asociado y lo guardas en el campo idUsuario
-  
-          $user = User::findOrFail($data['idUsuario']);
-          $bill->user()->associate($user);
-          $bill->compra()->associate($compra);
-          $bill->save();
-      
-          return response()->json(['status' => 201, 'message' => 'Factura creada', 'bill' => $bill], 201);
-      } catch (\Exception $e) {
-          return response()->json(['status' => 500, 'message' => 'Error al crear la factura: ' . $e->getMessage()], 500);
-      }
-  }
-
-    public function destroy($id)
-{
-    try {
-        $bill = Bill::find($id);
-        if (!$bill) {
-            return response()->json(['status' => 404, 'message' => 'Factura no encontrada'], 404);
-        }
-
-        $bill->delete();
-
-        return response()->json(['status' => 200, 'message' => 'Factura eliminada con éxito'], 200);
-    } catch (\Exception $e) {
-        return response()->json(['status' => 500, 'message' => 'Error al eliminar la factura: ' . $e->getMessage()], 500);
-    }
-}
-
-    public function update(Request $request, $id)
-    {
-        $data = $request->input('data', null);
-    
-        if (!$data) {
-            return response()->json(['status' => 400, 'message' => 'No se encontró el objeto data'], 400);
-        }
-    
-        $data = json_decode($data, true);
-        $validator = \Validator::make($data, [
-            'nomTienda' => 'required',
-            'metodoPago' => 'required',
-            
+        $data = $request->validate([
+            'idCompra' => 'required|integer|exists:compra,idCompra',
         ]);
     
-        if ($validator->fails()) {
-            return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' => $validator->errors()], 406);
-        }
-    
         try {
-            $bill = Bill::find($id);
-            if (!$bill) {
-                return response()->json(['status' => 404, 'message' => 'Factura no encontrada'], 404);
-            }
+            $compra = Compra::with('detalles.producto')->findOrFail($data['idCompra']);
+            $subTotal = $this->calcularSubTotal($compra);
+            $impuesto = ($subTotal - $descuento) * 0.12;
+            $total = $subTotal - $descuento + $impuesto;
+            $bill = Bill::create([
+                'idCompra' => $compra->idCompra,
+                'fechaEmision' => now(),
+                'subTotal' => $subTotal,
+                'descuento' => $descuento,
+                'impuesto' => $impuesto,
+                'total' => $total,
+            ]);
     
-            $bill->fill($data);
-            $bill->save();
-    
-            return response()->json(['status' => 200, 'message' => 'Factura actualizada', 'bill' => $bill], 200);
+            return response()->json([
+                'status' => 201,
+                'message' => 'Factura creada satisfactoriamente',
+                'bill' => $bill,
+            ], 201);
         } catch (\Exception $e) {
-            return response()->json(['status' => 500, 'message' => 'Error al actualizar la factura: ' . $e->getMessage()], 500);
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al procesar la solicitud',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-     }
-     public function calcularTotalPagar($idFactura, $impuesto)
-  {
-    $factura = Bill::findOrFail($idFactura);
+    }    
 
-    // Verificar si la factura existe y si su total es válido
-    if (!isset($factura->total)) {
-        throw new \Exception("El total de la factura no es válido. ID de factura: " . $idFactura);
+    // Obtener una Bill por su ID
+    public function show($idBill)
+    {
+        $Bill = Bill::find($idBill);
+
+        if ($Bill) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Datos de la Bill',
+                'Bill' => $Bill
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Bill no encontrada'
+            ], 404);
+        }
     }
 
-    // Calcular el total a pagar sumando el total de la factura y el impuesto
-    $totalPagar = $factura->total + $impuesto;
+    // Calcular el subtotal de la compra
+    private function calcularSubTotal($compra)
+    {
+        $subtotal = 0;
 
-    return $totalPagar;
-  }
+        foreach ($compra->carrito->productos as $producto) {
+            $precio = $producto->precio;
+            $cantidad = $producto->pivot->cantidad;
+            $subtotal += $precio * $cantidad;
+        }
 
+        return $subtotal;
+    }
+
+    // Eliminar una factura por su ID
+    public function destroy($idBill)
+    {
+        $Bill = Bill::find($idBill);
+
+        if ($Bill) {
+            $Bill->delete();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Bill eliminada correctamente'
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Bill no encontrada'
+            ], 404);
+        }
+    }
+
+    // Actualizar una Bill por su ID
+    public function update(Request $request, $idBill)
+    {
+        $data = $request->validate([
+            'total' => 'required|numeric',
+            'fechaEmision' => 'required|date'
+        ]);
+
+        $Bill = Bill::find($idBill);
+
+        if ($Bill) {
+            $Bill->update([
+                'total' => $data['total'],
+                'fechaEmision' => $data['fechaEmision']
+            ]);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Datos de la Bill actualizados satisfactoriamente',
+                'Bill' => $Bill
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Bill no encontrada'
+            ], 404);
+        }
+    }
 }

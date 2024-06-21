@@ -18,13 +18,13 @@ class JwtAuth{
             /**Payload Llave publica*/
             $token=array(
                 'iss'=>$user->id,
-                'email'=>$user->email,
                 'nombre'=>$user->nombre,
                 'apellido'=>$user->apellido,
                 'telefono'=>$user->telefono,
                 'direccion'=>$user->direccion,
                 'cedula'=>$user->cedula,
                 'rol'=>$user->rol,
+                'email'=>$user->email,
                 'iat'=>time(),
                 'exp'=>time()+(2000)
             );
