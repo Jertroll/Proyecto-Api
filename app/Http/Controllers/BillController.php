@@ -8,7 +8,7 @@ use App\Models\Compra;
 
 class BillController extends Controller
 {
-    // Obtener todos los registros de Bills
+    // Obtener todos los registros de factura
     public function index()
     {
         $Bills = Bill::all();
@@ -22,32 +22,40 @@ class BillController extends Controller
         return response()->json($response, 200);
     }
 
-    // Crear una nueva Bill
+    // Crear una nueva factura
     public function store(Request $request)
     {
         $data = $request->validate([
             'idCompra' => 'required|integer|exists:compra,idCompra',
         ]);
-        // Obtener la compra
-        $compra = Compra::with('carrito.productos')->findOrFail($data['idCompra']);
-        $subTotal = $this->calcularSubTotal($compra);
-        $impuesto = ($subTotal - $descuento) * 0.12;
-        $total = $subTotal - $descuento + $impuesto;
-        $Bill = Bill::create([
-            'idCompra' => $compra->id,
-            'fechaEmision' => now(),
-            'subTotal' => $subTotal,
-            'descuento' => $descuento,
-            'impuesto' => $impuesto,
-            'total' => $total,
-        ]);
-
-        return response()->json([
-            'status' => 201,
-            'message' => 'Bill creada satisfactoriamente',
-            'Bill' => $Bill,
-        ], 201);
-    }
+    
+        try {
+            $compra = Compra::with('detalles.producto')->findOrFail($data['idCompra']);
+            $subTotal = $this->calcularSubTotal($compra);
+            $impuesto = ($subTotal - $descuento) * 0.12;
+            $total = $subTotal - $descuento + $impuesto;
+            $bill = Bill::create([
+                'idCompra' => $compra->idCompra,
+                'fechaEmision' => now(),
+                'subTotal' => $subTotal,
+                'descuento' => $descuento,
+                'impuesto' => $impuesto,
+                'total' => $total,
+            ]);
+    
+            return response()->json([
+                'status' => 201,
+                'message' => 'Factura creada satisfactoriamente',
+                'bill' => $bill,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al procesar la solicitud',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }    
 
     // Obtener una Bill por su ID
     public function show($idBill)
@@ -82,7 +90,7 @@ class BillController extends Controller
         return $subtotal;
     }
 
-    // Eliminar una Bill por su ID
+    // Eliminar una factura por su ID
     public function destroy($idBill)
     {
         $Bill = Bill::find($idBill);
