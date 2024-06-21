@@ -6,6 +6,10 @@ use App\Models\Compra;
 use App\Models\DetalleCompra;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\JwtAuth;
+use App\Models\Carrito;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class CompraController extends Controller
 {
@@ -29,29 +33,54 @@ class CompraController extends Controller
     // Crear una nueva compra y sus detalles
     public function store(Request $request)
     {
+        \Log::info('Encabezados recibidos:', $request->headers->all());
+        \Log::info('Cuerpo de la solicitud:', $request->all());
+        $bearerToken = $request->header('bearertoken');
         \Log::info('Datos recibidos para crear compra:', $request->all());
-        $data_input=$request->input('data',null);
+        if (!$bearerToken) {
+            return response()->json([
+                'status' => 401,
+                'message' => 'Token inválido o no proporcionado.'
+            ], 401);
+        }
+        $jwt = new JwtAuth();
+        $decodedToken = $jwt->checkToken($bearerToken, true);
+
+        if (!$decodedToken || !isset($decodedToken->iss)) {
+            return response()->json(['status' => 400, 'message' => 'Token inválido'], 400);
+        }
+        $userId = $decodedToken->iss;
+       
+      
+        $carrito = Carrito::where('user_id', $userId)->first();
+        if (!$carrito) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Carrito no encontrado para el usuario.'
+            ], 404);
+        }
+    
+        $data_input = $request->input('data', null);
         if ($data_input) {
-            $data=json_decode($data_input,true);
+            $data = json_decode($data_input, true);
             $data = array_map('trim', $data);
             $rules = [
-            'idUsuario' => 'required|integer|exists:users,idUsuario',
-            'idCarrito'=> 'required|integer', 
-            'estadoCompra'=> 'required',
-            'fecha'=> 'required|date'
+                'estadoCompra'=> 'required',
+                'fecha'=> 'required|date'
             ];
-            $isValid = \validator($data, $rules);
+            $isValid = \Validator::make($data, $rules);
             if (!$isValid->fails()) {
                 $compra = new Compra();
-                $compra->idUsuario = $data['idUsuario'];
-                $compra->idCarrito = $data['idCarrito'];
+                $compra->idUsuario = $userId;
+                $compra->idCarrito = $carrito->id;
                 $compra->estadoCompra = $data['estadoCompra'];
                 $compra->fecha = $data['fecha'];
                 $compra->save();
+                $this->eliminarProductosComprados($carrito->id);
                 $response = array(
                     'status' => 201,
                     'message' => 'Compra agregada',
-                    'producto' => $compra
+                    'compra' => $compra
                 );
             } else {
                 $response = array(
@@ -67,8 +96,8 @@ class CompraController extends Controller
             );
         }
         return response()->json($response, $response['status']);
-       
     }
+    
 
     // Eliminar una compra
     public function destroy($id)
@@ -88,6 +117,20 @@ class CompraController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Error al eliminar la compra', 'error' => $e->getMessage()], 500);
+        }
+    }
+    public function eliminarProductosComprados($carritoId)
+    {
+        try {
+            Log::info('Intentando eliminar productos del carrito con ID: '. $carritoId);
+            $carrito = Carrito::findOrFail($carritoId);
+    
+            // Desvincular todos los productos del carrito
+            $carrito->productos()->detach();
+            Log::info('Productos eliminados del carrito exitosamente.');
+            return response()->json(['message' => 'Productos eliminados del carrito'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al eliminar productos del carrito', 'error' => $e->getMessage()], 500);
         }
     }
 }
