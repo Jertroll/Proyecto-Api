@@ -37,7 +37,7 @@ Route::prefix('v1')->group(function () {
 
       Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']]);
       Route::delete('carrito/{carritoId}/eliminarProductosComprados', [CompraController::class, 'eliminarProductosComprados']);
-      Route::delete('carrito/remove-producto', [CompraController::class, 'removeProductFromCart']);
+      Route::delete('carrito/{productoId}/eliminar', [CarritoController::class, 'removeProductFromCart']);
       
       Route::post('/user/upload',[UserController::class,'uploadImage']);
       Route::get('/user/getimage/{filename}',[UserController::class,'getImage']);
