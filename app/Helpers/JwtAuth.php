@@ -15,7 +15,7 @@ class JwtAuth{
         $user=User::where(['email'=>$email])->first();
         //var_dump($user);
         if(is_object($user) && password_verify($password,$user->password)){
-            /**Payload Llave publica*/
+            /*Payload Llave publica*/
             $token=array(
                 'iss'=>$user->id,
                 'email'=>$user->email,
