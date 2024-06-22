@@ -102,68 +102,74 @@ class UserController extends Controller
       
 
     public function update(Request $request, $id)
-    {   
+{
+    // Obtener los datos directamente del request
+    $data = $request->all();
 
-
-                $dataInput = $request->input('data', null);
-                $data = $dataInput;
-        
-                if (empty($data)) {
-                    $response = array(
-                        'status' => 400,
-                        'message' => 'Datos no proporcionados o incorrectos',
-                    );
-                } else {
-                    $rules = [
-                        'nombre' => 'required',
-                        'apellido' =>'required',
-                        'telefono' =>'required',
-                        'direccion'=>'required',
-                        'cedula' =>'required',
-                        'email'=>'required',
-                        'password'=>'required'
-
-                    ];
-        
-                    $valid = \validator($data, $rules);
-        
-                    if ($valid->fails()) {
-                        $response = array(
-                            'status' => 406,
-                            'message' => 'Datos enviados no cumplen con las reglas establecidas',
-                            'errors' => $valid->errors(),
-                        );
-                    } else {
-                        if (!empty($id)) {
-                            $user = User::find($id);
-        
-                            if ($user) {
-                                $user->update($data);
-        
-                                $response = array(
-                                    'status' => 200,
-                                    'message' => 'Datos actualizados satisfactoriamente',
-                                );
-                            } else {
-                                $response = array(
-                                    'status' => 400,
-                                    'message' => 'El user$user no existe',
-                                );
-                            }
-                        } else {
-                            $response = array(
-                                'status' => 400,
-                                'message' => 'El ID del user$user no es válido',
-                            );
-                        }
-                    }
-                }
-        
-                return response()->json($response, $response['status']);
-
-
-           
+    // Validar que los datos no estén vacíos
+    if (empty($data)) {
+        return response()->json([
+            'status' => 400,
+            'message' => 'Datos no proporcionados o incorrectos',
+        ], 400);
     }
+
+    // Reglas de validación
+    $rules = [
+        'nombre' => 'required',
+        'apellido' => 'required',
+        'telefono' => 'required',
+        'direccion' => 'required',
+        'cedula' => 'required',
+        'email' => 'required|email',
+    ];
+
+    // Validar los datos
+    $validator = \Validator::make($data, $rules);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 406,
+            'message' => 'Datos enviados no cumplen con las reglas establecidas',
+            'errors' => $validator->errors(),
+        ], 406);
+    }
+
+    // Verificar si el ID del usuario es válido
+    if (empty($id)) {
+        return response()->json([
+            'status' => 400,
+            'message' => 'El ID del usuario no es válido',
+        ], 400);
+    }
+
+    // Buscar el usuario por ID
+    $user = User::find($id);
+
+    if ($user) {
+        // Actualizar los datos del usuario
+        $user->nombre = $data['nombre'];
+        $user->apellido = $data['apellido'];
+        $user->telefono = $data['telefono'];
+        $user->direccion = $data['direccion'];
+        $user->cedula = $data['cedula'];
+        $user->email = $data['email'];
+        $user->imagen = $data['imagen'];
+
+        
+        $user->save();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Datos actualizados satisfactoriamente',
+        ], 200);
+    } else {
+        return response()->json([
+            'status' => 400,
+            'message' => 'El usuario no existe',
+        ], 400);
+    }
+}
 
 
 
@@ -208,7 +214,7 @@ class UserController extends Controller
 
     public function destroy($id) {
         if (isset($id)) {
-            $deleted = User::where('id', $id)->delete();
+            $deleted = user::where('id', $id)->delete();
             if ($deleted) {
                 $response = array(
                     'status' => 200,
@@ -249,6 +255,7 @@ class UserController extends Controller
         }
         return response()->json($response,$response['status']);
     }
+
     public function getImage($filename){
         if(isset($filename)){
             $exist=\Storage::disk('usuarios')->exists($filename);
@@ -290,7 +297,7 @@ class UserController extends Controller
 
         // Eliminar la imagen anterior si existe
         if ($user->imagen) {
-            Storage::disk('usuarios')->delete($user->imagen);
+            Storage::disk('user')->delete($user->imagen);
         }
 
         $user->imagen = $filename;

@@ -14,9 +14,9 @@ class Bill extends Model
         'idUsuario',
         'nomTienda',
         'fechaEmision',
-        'metodoPago',
-        'total',
-        'idCompra'
+        'idCompra',
+        'subTotal',       
+        'total'
     ];
 
     protected $primaryKey = 'id';
