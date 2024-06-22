@@ -22,26 +22,6 @@ class BillController extends Controller
         return response()->json($response, 200);
     }
 
-    public function show($id)
-    {
-        $bill = Bill::find($id);
-        if ($bill) {
-            return response()->json([
-                'status' => 200,
-                'message' => 'Datos de la factura',
-                'bill' =>  $bill
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Recurso no encontrado'
-            ], 404);
-        }
-    }
-    
-
-
-
     // Crear una nueva factura
     public function store(Request $request)
     {
