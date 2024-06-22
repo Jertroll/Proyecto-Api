@@ -170,7 +170,7 @@ class UserController extends Controller
 
     
     public function login(Request $request){
-        \Log::info('Datos recibidos:', $request->all());
+      //  \Log::info('Datos recibidos:', $request->all());
         $data_input=$request->input('data',null);
         $data=json_decode($data_input,true);
         $data=array_map('trim',$data);
