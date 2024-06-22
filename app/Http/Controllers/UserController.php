@@ -170,7 +170,7 @@ class UserController extends Controller
 
     
     public function login(Request $request){
-        \Log::info('Datos recibidos:', $request->all());
+      //  \Log::info('Datos recibidos:', $request->all());
         $data_input=$request->input('data',null);
         $data=json_decode($data_input,true);
         $data=array_map('trim',$data);
@@ -234,7 +234,7 @@ class UserController extends Controller
         $isValid=\Validator::make($request->all(),['file0'=>'required|image|mimes:jpg,png,jpeg,svg']);
         if(!$isValid->fails()){
             $filename=\Str::uuid().".".$image->getClientOriginalExtension();
-            \Storage::disk('usuarios')->put($filename,\File::get($image));
+            \Storage::disk('user')->put($filename,\File::get($image));
             $response=array(
                 'status'=>201,
                 'message'=>'Imagen guardada',
@@ -251,7 +251,7 @@ class UserController extends Controller
     }
     public function getImage($filename){
         if(isset($filename)){
-            $exist=\Storage::disk('usuarios')->exists($filename);
+            $exist=\Storage::disk('user')->exists($filename);
             if($exist){
                 $file=\Storage::disk('usuarios')->get($filename);
                 return new Response($file,200);
@@ -290,7 +290,7 @@ class UserController extends Controller
 
         // Eliminar la imagen anterior si existe
         if ($user->imagen) {
-            Storage::disk('usuarios')->delete($user->imagen);
+            Storage::disk('user')->delete($user->imagen);
         }
 
         $user->imagen = $filename;
