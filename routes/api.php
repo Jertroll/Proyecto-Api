@@ -17,34 +17,27 @@ Route::prefix('v1')->group(function () {
     // Rutas públicas de productos
     Route::get('/productos', [ProductoController::class, 'index']);
     Route::get('/productos/{id}', [ProductoController::class, 'show']);
+    Route::resource('/producto', ProductoController::class, ['except' => ['create', 'edit']]);
+    Route::get('/producto/buscar/{nombre}', [ProductoController::class, 'buscarNombre']);
+
+    // Rutas de productos imagen
     Route::post('/producto/upload', [ProductoController::class, 'uploadImage']);
     Route::get('/producto/getimage/{filename}', [ProductoController::class, 'getImage']);
     Route::put('/producto/{id}/update-imagen', [ProductoController::class, 'updateImagen'])->name('producto.update-imagen');
-
-    Route::resource('/producto', ProductoController::class, ['except' => ['create', 'edit']]);
-    
-    Route::get('/producto/buscar/{nombre}', [ProductoController::class, 'buscarNombre']);
-
-
-
 
     // Autenticación de usuario
     Route::post('/user/login', [UserController::class, 'login']);
     Route::post('/user/register', [UserController::class, 'store']);
     Route::get('/user/getidentity', [UserController::class, 'getIdentity'])->middleware(ApiAuthMiddleware::class);
 
-    // Rutas de productos
-    Route::post('/producto/upload', [ProductoController::class, 'uploadImage']);
-    Route::get('/producto/getimage/{filename}', [ProductoController::class, 'getImage']);
-    Route::put('/producto/{id}/update-imagen', [ProductoController::class, 'updateImagen'])->name('producto.update-imagen');
-
     // Rutas de usuario para imágenes
     Route::post('/user/upload', [UserController::class, 'uploadImage']);
     Route::get('/user/getimage/{filename}', [UserController::class, 'getImage']);
     Route::put('/user/{id}/update-imagen', [UserController::class, 'updateImagen'])->name('user.update-imagen');
 
-    // Rutas automáticas Restful para Compra
+    // Rutas automáticas Restful 
     Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']]);
+
 
     // Rutas de compra y carrito
     Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']]);
@@ -68,8 +61,14 @@ Route::prefix('v1')->group(function () {
             Route::post('/carrito/{id}/vaciarCarrito', [CarritoController::class, 'vaciarCarrito']);
         });
 
+
+    });
+});
+
+
+
         // Rutas específicas para cliente
-        Route::prefix('client')->middleware(UserMiddleware::class)->group(function () {
+        /*Route::prefix('client')->middleware(UserMiddleware::class)->group(function () {
             Route::get('/bill/{idFactura}', [BillController::class, 'show']);
             Route::get('/bills', [BillController::class, 'index']);
             Route::get('/carrito/{id}', [CarritoController::class, 'show']);
@@ -85,6 +84,4 @@ Route::prefix('v1')->group(function () {
             Route::put('/compras/{idCompra}', [CompraController::class, 'update']);
             Route::get('/detalle_facturas', [DetalleFacturaController::class, 'index']);
             Route::get('/detalle_facturas/{idDetalleFactura}', [DetalleFacturaController::class, 'show']);
-        });
-    });
-});
+        });*/
