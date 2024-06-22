@@ -39,56 +39,12 @@ Route::prefix('v1')->group(function () {
     Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']]);
 
 
-<<<<<<< Updated upstream
     // Rutas de compra y carrito
     Route::resource('/compra', CompraController::class, ['except' => ['create', 'edit']]);
     Route::resource('detalleCompra', DetalleCompraController::class);
     Route::post('/carrito/store', [CarritoController::class, 'store']);
     Route::get('/carrito/obtener', [CarritoController::class, 'obtenerCarrito']);
     Route::post('/agregarCarrito', [CarritoController::class, 'addProductToCart']);
-=======
-
-
-Route::prefix('v1')->group(
-function(){
-    //rutas especificas
-
-
-   //Bill
-   Route::get('/bill/{idFactura}', [BillController::class, 'show']) ->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);
-   Route::get('/bill/{idFactura}', [BillController::class, 'index']) ->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);
-
-   //Carrito
-   Route::post('/carrito/{id}/addProductToCart', [CarritoController::class, 'addProductToCart'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);// Agregar producto al carrito
-   Route::post('/carrito/{id}/removeProductFromCart', [CarritoController::class, 'removeProductFromCart'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);
-   Route::post('/carrito/{id}/vaciarCarrito', [CarritoController::class, 'vaciarCarrito'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);
-   Route::get('/carritos/{id}', [CarritoController::class, 'show'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);  
-   Route::put('/carritos/{id}', [CarritoController::class, 'update'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);                                                                                                                                                                          
-
-
-   //Usuario
-   Route::post('/user/login',[UserController::class,'login']); 
-   Route::get('/user/getidentity',[UserController::class,'getIdentity'])->middleware(ApiAuthMiddleware::class); 
-   Route::get('/user/{id}',[UserController::class,'show'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
-   Route::put('/user/{id}', [UserController::class,'update'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);
-   Route::post('/user/{id}', [UserController::class,'store'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);
-
-   //Producto
-   Route::post('/producto/upload',[ProductoController::class,'uploadImage']);
-   Route::get('/producto/getimage/{filename}',[ProductoController::class,'getImage']);
-   Route::get('/productos/{id}', [ProductoController::class,'index'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
-   Route::get('/productos/{id}',[ProductoController::class,'show'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
-
-   //compra
-   Route::get('/compras', [CompraController::class,'index'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);  
-   Route::get('/compras/{idCompra}', [CompraController::class,'show'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
-   Route::post('/compras',[CompraController::class,'store'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
-   Route::put('/compras/{idCompra}', [CompraController::class,'update'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]); 
- 
-   //detalle factura
-   Route::get('/detalle_facturas', [DetalleFacturaController::class,'index'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);
-   Route::get('/detalle_facturas/{idDetalleFactura}', [DetalleFacturaController::class,'show'])->middleware([ApiAuthMiddleware::class,UserMiddleware::class]);
->>>>>>> Stashed changes
     
     // Rutas protegidas por autenticación y roles
     Route::middleware(ApiAuthMiddleware::class)->group(function () {
