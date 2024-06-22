@@ -27,6 +27,21 @@ class DetalleCompraController extends Controller
         }
         return response()->json($detalle);
     }
+    public function obtenerDetalles($idCompra)
+    {
+        try {
+            $detalles = DetalleCompra::where('idCompra', $idCompra)->get();
+            
+            // Agregar log para ver los detalles obtenidos
+            \Log::info('Detalles obtenidos para idCompra ' . $idCompra . ': ' . $detalles);
+            
+            return response()->json(['data' => $detalles], 200);
+        } catch (\Exception $e) {
+            \Log::error('Error al obtener detalles de la compra: ' . $e->getMessage());
+            return response()->json(['message' => 'Error al obtener los detalles de la compra', 'error' => $e->getMessage()], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         // Verificar y logear los datos recibidos

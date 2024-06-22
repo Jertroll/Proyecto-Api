@@ -13,15 +13,18 @@ use App\Http\Middleware\UserMiddleware;
 
 Route::prefix('v1')->group(function () {
 
+
+
     
 Route::resource('/producto', ProductoController::class, ['except' => ['create', 'edit']])->middleware(AdminMiddleware::class);
 Route::get('/user/getidentity', [UserController::class, 'getIdentity'])->middleware(ApiAuthMiddleware::class);
 Route::resource('/user', UserController::class, ['except' => ['create', 'edit']])->middleware(AdminMiddleware::class);
 
+
 //Route::get('/user/{id}', [UserController::class, 'show']);
 
     Route::post('user/login', [UserController::class, 'login']);
-    Route::post('/user/register', [UserController::class, 'store']);
+    Route::post('/user', [UserController::class, 'store']);
     
     
     Route::post('/user/upload', [UserController::class, 'uploadImage']);
@@ -56,6 +59,7 @@ Route::resource('/user', UserController::class, ['except' => ['create', 'edit']]
 
     // Rutas de detalle de compra
     Route::resource('detalleCompra', DetalleCompraController::class, ['except' => ['create', 'edit']]);
+    Route::get('detalle/{idCompra}/detalles', [DetalleCompraController::class, 'obtenerDetalles']);
 
     // Rutas de facturas
     Route::resource('/bill', BillController::class)->except(['create', 'edit']);
