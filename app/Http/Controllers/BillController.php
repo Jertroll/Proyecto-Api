@@ -3,26 +3,25 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use App\Models\Bill;
-use App\Models\User;
 use App\Models\Compra;
-use App\Helpers\JwtAuth;
-
-
 
 class BillController extends Controller
 {
+    // Obtener todos los registros de factura
     public function index()
     {
-        $facturas=Bill::with('user','compra')->get();
-        $response=array(
-            "status"=>200,
-            "message"=>"Todos los registro de facturas",
-            "data"=>$facturas
-        );
-        return response()->json($response,200);
+        $Bills = Bill::all();
+        
+        $response = [
+            "status" => 200,
+            "message" => "Todos los registros de las Bills",
+            "data" => $Bills
+        ];
+
+        return response()->json($response, 200);
     }
+
     public function show($id)
     {
         $bill = Bill::find($id);
@@ -41,6 +40,9 @@ class BillController extends Controller
     }
     
 
+
+
+    // Crear una nueva factura
     public function store(Request $request)
     {
         $bearerToken = $request->header('bearertoken');
@@ -73,7 +75,10 @@ class BillController extends Controller
         foreach ($compra->detalles as $detalle) {
             $subTotal += $detalle->cantidad * $detalle->precioUnitario;
         }
-        $impuesto = $subTotal * 0.16; // Suponiendo un impuesto del 16%
+
+        
+        $impuesto = $subTotal * 0.13; 
+
         $total = $subTotal + $impuesto;
     
         $bill= Bill::create([
@@ -124,37 +129,66 @@ class BillController extends Controller
             
         ]);
     
-        if ($validator->fails()) {
-            return response()->json(['status' => 406, 'message' => 'Datos inválidos', 'errors' => $validator->errors()], 406);
-        }
-    
         try {
-            $bill = Bill::find($id);
-            if (!$bill) {
-                return response()->json(['status' => 404, 'message' => 'Factura no encontrada'], 404);
-            }
+            $compra = Compra::with('detalles.producto')->findOrFail($data['idCompra']);
+            $subTotal = $this->calcularSubTotal($compra);
+            $impuesto = ($subTotal - $descuento) * 0.12;
+            $total = $subTotal - $descuento + $impuesto;
+            $bill = Bill::create([
+                'idCompra' => $compra->idCompra,
+                'fechaEmision' => now(),
+                'subTotal' => $subTotal,
+                'descuento' => $descuento,
+                'impuesto' => $impuesto,
+                'total' => $total,
+            ]);
     
-            $bill->fill($data);
-            $bill->save();
-    
-            return response()->json(['status' => 200, 'message' => 'Factura actualizada', 'bill' => $bill], 200);
+            return response()->json([
+                'status' => 201,
+                'message' => 'Factura creada satisfactoriamente',
+                'bill' => $bill,
+            ], 201);
         } catch (\Exception $e) {
-            return response()->json(['status' => 500, 'message' => 'Error al actualizar la factura: ' . $e->getMessage()], 500);
+            return response()->json([
+                'status' => 500,
+                'message' => 'Ocurrió un error al procesar la solicitud',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-     }
-     public function calcularTotalPagar($idFactura, $impuesto)
-  {
-    $factura = Bill::findOrFail($idFactura);
+    }    
 
-    // Verificar si la factura existe y si su total es válido
-    if (!isset($factura->total)) {
-        throw new \Exception("El total de la factura no es válido. ID de factura: " . $idFactura);
+    // Obtener una Bill por su ID
+    public function show($idBill)
+    {
+        $Bill = Bill::find($idBill);
+
+        if ($Bill) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Datos de la Bill',
+                'Bill' => $Bill
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Bill no encontrada'
+            ], 404);
+        }
     }
 
-    // Calcular el total a pagar sumando el total de la factura y el impuesto
-    $totalPagar = $factura->total + $impuesto;
+    // Calcular el subtotal de la compra
+    private function calcularSubTotal($compra)
+    {
+        $subtotal = 0;
 
-    return $totalPagar;
-  }
+        foreach ($compra->carrito->productos as $producto) {
+            $precio = $producto->precio;
+            $cantidad = $producto->pivot->cantidad;
+            $subtotal += $precio * $cantidad;
+        }
+
+        return $subtotal;
+    }
+
 
 }
