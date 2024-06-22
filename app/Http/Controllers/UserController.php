@@ -154,6 +154,7 @@ class UserController extends Controller
         $user->direccion = $data['direccion'];
         $user->cedula = $data['cedula'];
         $user->email = $data['email'];
+        $user->rol = $data['rol'];
         $user->imagen = $data['imagen'];
 
         
