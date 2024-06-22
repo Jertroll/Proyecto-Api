@@ -12,7 +12,7 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\UserMiddleware;
 
 Route::prefix('v1')->group(function () {
-    Route::post('/login', [UserController::class, 'login']);
+    Route::post('user/login', [UserController::class, 'login']);
     Route::post('/user/register', [UserController::class, 'store']);
     Route::get('/client/user/getidentity', [UserController::class, 'getIdentity'])->middleware(ApiAuthMiddleware::class);
     Route::get('/user/{id}', [UserController::class, 'show']);
