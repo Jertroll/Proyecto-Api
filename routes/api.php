@@ -14,9 +14,9 @@ use App\Http\Middleware\UserMiddleware;
 Route::prefix('v1')->group(function () {
 
     
-Route::resource('/producto', ProductoController::class, ['except' => ['create', 'edit']]);
+Route::resource('/producto', ProductoController::class, ['except' => ['create', 'edit']])->middleware(AdminMiddleware::class);
 Route::get('/user/getidentity', [UserController::class, 'getIdentity'])->middleware(ApiAuthMiddleware::class);
-Route::resource('/user', UserController::class, ['except' => ['create', 'edit']]);
+Route::resource('/user', UserController::class, ['except' => ['create', 'edit']])->middleware(AdminMiddleware::class);
 
 //Route::get('/user/{id}', [UserController::class, 'show']);
 
