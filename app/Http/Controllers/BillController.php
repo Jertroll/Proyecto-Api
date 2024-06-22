@@ -22,6 +22,26 @@ class BillController extends Controller
         return response()->json($response, 200);
     }
 
+    public function show($id)
+    {
+        $bill = Bill::find($id);
+        if ($bill) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Datos de la factura',
+                'bill' =>  $bill
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Recurso no encontrado'
+            ], 404);
+        }
+    }
+    
+
+
+
     // Crear una nueva factura
     public function store(Request $request)
     {
@@ -29,45 +49,54 @@ class BillController extends Controller
         if (!$bearerToken) {
             return response()->json(['status' => 400, 'message' => 'Token no proporcionado'], 400);
         }
-   
-  
+    
         $jwt = new JwtAuth();
         $decodedToken = $jwt->checkToken($bearerToken, true);
-
+    
         if (!$decodedToken || !isset($decodedToken->iss)) {
             return response()->json(['status' => 400, 'message' => 'Token inválido'], 400);
         }
         $userId = $decodedToken->iss;
-
+    
         $data = $request->validate([
-            'nomTienda' => 'required|integer',
+            'nomTienda' => 'required|string',
             'fechaEmision' => 'required|date',
             'idCompra' => 'required|integer|exists:compra,idCompra',
         ]);
-
+    
         $compra = Compra::with('detalles')->findOrFail($data['idCompra']);
+    
+        // Verificar que la compra tenga detalles
+        if (is_null($compra->detalles) || $compra->detalles->isEmpty()) {
+            return response()->json(['status' => 400, 'message' => 'No se encontraron detalles para esta compra'], 400);
+        }
+    
         $subTotal = 0;
         foreach ($compra->detalles as $detalle) {
             $subTotal += $detalle->cantidad * $detalle->precioUnitario;
         }
+
+        
         $impuesto = $subTotal * 0.13; 
+
         $total = $subTotal + $impuesto;
-     
-        $bill = Bill::create([
-            'idUsuario'=>$compra->idUsuario=$userId,
-            'nomTienda' =>$request->input('nomTienda'),
-            'fechaEmision' => $request->input('fechaEmision'),
-            'idCompra'=>$compra->idCompra,
-            'subTotal' => $subTotalConDescuento,
+    
+        $bill= Bill::create([
+            'idUsuario' => $userId,
+            'nomTienda' => $data['nomTienda'],
+            'fechaEmision' => $data['fechaEmision'],
+            'idCompra' => $compra->idCompra,
+            'subTotal' => $subTotal,
             'total' => $total
         ]);
+    
         return response()->json([
             'status' => 201,
             'message' => 'Factura creada satisfactoriamente',
-            'factura' => $factura,
+            'bill' => $bill,
         ], 201);
-
-  }
+    }
+    
 
     public function destroy($id)
 {

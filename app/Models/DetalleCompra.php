@@ -28,7 +28,7 @@ class DetalleCompra extends Model
     }
     public function producto()
     {
-        return $this->hasOne(Producto::class,'idProducto');
+        return $this->belongsTo(Producto::class,'idProducto');
     }
 
 }

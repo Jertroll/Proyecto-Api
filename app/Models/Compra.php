@@ -30,10 +30,9 @@ class Compra extends Model
     {
         return $this->belongsTo(Carrito::class, 'idCarrito');
     }
-
     public function detalles()
     {
-        return $this->belongsTo(DetalleCompra::class, 'idCompra');
+        return $this->hasMany(DetalleCompra::class, 'idCompra');
     }
     public function bill()
     {

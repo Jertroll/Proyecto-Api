@@ -76,7 +76,6 @@ class CompraController extends Controller
                 $compra->estadoCompra = $data['estadoCompra'];
                 $compra->fecha = $data['fecha'];
                 $compra->save();
-                $this->eliminarProductosComprados($carrito->id);
                 $response = array(
                     'status' => 201,
                     'message' => 'Compra agregada',
@@ -119,18 +118,5 @@ class CompraController extends Controller
             return response()->json(['message' => 'Error al eliminar la compra', 'error' => $e->getMessage()], 500);
         }
     }
-    public function eliminarProductosComprados($carritoId)
-    {
-        try {
-            Log::info('Intentando eliminar productos del carrito con ID: '. $carritoId);
-            $carrito = Carrito::findOrFail($carritoId);
     
-            // Desvincular todos los productos del carrito
-            $carrito->productos()->detach();
-            Log::info('Productos eliminados del carrito exitosamente.');
-            return response()->json(['message' => 'Productos eliminados del carrito'], 200);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Error al eliminar productos del carrito', 'error' => $e->getMessage()], 500);
-        }
-    }
 }
