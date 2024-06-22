@@ -21,7 +21,7 @@ Route::resource('/user', UserController::class, ['except' => ['create', 'edit']]
 //Route::get('/user/{id}', [UserController::class, 'show']);
 
     Route::post('user/login', [UserController::class, 'login']);
-    Route::post('/user/register', [UserController::class, 'store']);
+    Route::post('/user', [UserController::class, 'store']);
     
     
     Route::post('/user/upload', [UserController::class, 'uploadImage']);
