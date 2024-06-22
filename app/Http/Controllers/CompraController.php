@@ -76,7 +76,6 @@ class CompraController extends Controller
                 $compra->estadoCompra = $data['estadoCompra'];
                 $compra->fecha = $data['fecha'];
                 $compra->save();
-                $this->eliminarProductosComprados($carrito->id);
                 $response = array(
                     'status' => 201,
                     'message' => 'Compra agregada',

@@ -25,11 +25,18 @@ class BillController extends Controller
     }
     public function show($id)
     {
-        try {
-            $bill = Bill::with('user', 'compra')->findOrFail($id);
-            return response()->json(['status' => 200, 'message' => 'Factura encontrada', 'bill' => $bill], 200);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 404, 'message' => 'Factura no encontrada'], 404);
+        $bill = Bill::find($id);
+        if ($bill) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Datos de la factura',
+                'bill' =>  $bill
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Recurso no encontrado'
+            ], 404);
         }
     }
     
@@ -69,7 +76,7 @@ class BillController extends Controller
         $impuesto = $subTotal * 0.16; // Suponiendo un impuesto del 16%
         $total = $subTotal + $impuesto;
     
-        $factura = Bill::create([
+        $bill= Bill::create([
             'idUsuario' => $userId,
             'nomTienda' => $data['nomTienda'],
             'fechaEmision' => $data['fechaEmision'],
@@ -81,7 +88,7 @@ class BillController extends Controller
         return response()->json([
             'status' => 201,
             'message' => 'Factura creada satisfactoriamente',
-            'factura' => $factura,
+            'bill' => $bill,
         ], 201);
     }
     

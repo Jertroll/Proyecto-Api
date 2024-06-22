@@ -53,8 +53,8 @@ Route::prefix('v1')->group(function () {
     // Rutas de facturas
     Route::resource('/bill', BillController::class)->except(['create', 'edit']);
     Route::get('/bills', [BillController::class, 'index']);
-    Route::get('/bill/{idFactura}', [BillController::class, 'show']);
-    
+    Route::get('/bill/{id}', [BillController::class, 'show']);
+
 
     // Rutas protegidas por autenticación y roles
     Route::middleware(ApiAuthMiddleware::class)->group(function () {
