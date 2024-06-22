@@ -16,7 +16,7 @@ class CompraController extends Controller
     // Listar todas las compras
     public function index()
     {
-        $compras = Compra::with('detalles.producto')->get();
+        $compras = Compra::with('detalles')->get();
         return response()->json($compras);
     }
 
