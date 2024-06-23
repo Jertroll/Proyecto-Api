@@ -157,25 +157,6 @@ class BillController extends Controller
         }
     }    
 
-    // Obtener una Bill por su ID
-    public function show($idBill)
-    {
-        $Bill = Bill::find($idBill);
-
-        if ($Bill) {
-            return response()->json([
-                'status' => 200,
-                'message' => 'Datos de la Bill',
-                'Bill' => $Bill
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Bill no encontrada'
-            ], 404);
-        }
-    }
-
     // Calcular el subtotal de la compra
     private function calcularSubTotal($compra)
     {
