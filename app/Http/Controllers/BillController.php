@@ -162,7 +162,7 @@ public function getUserBills(Request $request)
         // Verificar la presencia del token en los encabezados de la solicitud
         \Log::info('Encabezados recibidos:', $request->headers->all());
         \Log::info('Cuerpo de la solicitud:', $request->all());
-        $bearerToken = $request->header('bearertoken');
+        $bearerToken = $request->header('ElPerroCR');
         \Log::info('Datos recibidos para crear compra:', $request->all());
         if (!$bearerToken) {
             return response()->json([

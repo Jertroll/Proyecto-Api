@@ -64,6 +64,7 @@ Route::resource('/user', UserController::class, ['except' => ['create', 'edit']]
     // Rutas de facturas
     Route::resource('/bill', BillController::class)->except(['create', 'edit']);
     Route::get('/bills', [BillController::class, 'index']);
+    Route::get('/user-bills',[BillController::class, 'getUserBills']);
 
     Route::get('/bill/{id}', [BillController::class, 'show']);
 
