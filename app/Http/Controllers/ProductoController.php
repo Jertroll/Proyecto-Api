@@ -43,7 +43,7 @@ class ProductoController extends Controller
                             $fail($attribute . ' no es válido. El estado debe ser "disponible" o "no disponible".');
                         }
                     },
-                ],
+                ],          
                 'imagen' => 'required',
             ];
             $isValid = \validator($data, $rules);

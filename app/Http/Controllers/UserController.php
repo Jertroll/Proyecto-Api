@@ -275,6 +275,7 @@ class UserController extends Controller
         }
         return response()->json($response,$response['status']);
     }
+    
     public function updateImagen(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
