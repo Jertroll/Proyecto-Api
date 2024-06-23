@@ -25,6 +25,7 @@ class JwtAuth{
                 'cedula'=>$user->cedula,
                 'rol'=>$user->rol,
                 'email'=>$user->email,
+                'imagen'=>$user->imagen,
                 'iat'=>time(),
                 'exp'=>time()+(20000)
             );

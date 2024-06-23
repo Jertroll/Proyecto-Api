@@ -31,8 +31,5 @@ class Bill extends Model
     {
         return $this->belongsTo(Compra::class, 'idCompra');
     }
-    public function detalleFac()
-    {
-        return $this->hasMany(DetalleFactura::class, 'idDetalleFactura');
-}
+    
 }

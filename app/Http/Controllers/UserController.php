@@ -7,9 +7,7 @@ use App\Models\Bill;
 use Illuminate\Http\Request;
 
 use App\Helpers\JwtAuth;
-
-
-
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -277,6 +275,7 @@ class UserController extends Controller
         }
         return response()->json($response,$response['status']);
     }
+    
     public function updateImagen(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
