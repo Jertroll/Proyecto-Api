@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Bill;
 use App\Models\Compra;
+use App\Helpers\JwtAuth;
+use Illuminate\Support\Facades\Log;
 
 class BillController extends Controller
 {
@@ -152,4 +154,57 @@ class BillController extends Controller
     }
 
 
+
+//Listar Factura con detalle
+public function getUserBills(Request $request)
+{
+    try {
+        // Verificar la presencia del token en los encabezados de la solicitud
+        \Log::info('Encabezados recibidos:', $request->headers->all());
+        \Log::info('Cuerpo de la solicitud:', $request->all());
+        $bearerToken = $request->header('bearertoken');
+        \Log::info('Datos recibidos para crear compra:', $request->all());
+        if (!$bearerToken) {
+            return response()->json([
+                'status' => 401,
+                'message' => 'Token no proporcionado.',
+            ], 401);
+        }
+
+        // Validar el token JWT
+        $jwt = new JwtAuth();
+        $decodedToken = $jwt->checkToken($bearerToken, true);
+        if (!$decodedToken || !isset($decodedToken->iss)) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Token inválido.',
+            ], 400);
+        }
+
+        // Obtener el ID del usuario desde el token decodificado
+        $userId = $decodedToken->iss;
+
+        // Obtener las facturas del usuario, incluyendo la compra y sus detalles
+        $bills = Bill::where('idUsuario', $userId)
+                      ->with(['compra.detalles']) // Cargar las compras y sus detalles
+                      ->get();
+
+        // Retornar las facturas con sus detalles en formato JSON
+        return response()->json([
+            'status' => 200,
+            'message' => 'Facturas obtenidas con éxito.',
+            'data' => $bills,
+        ], 200);
+    } catch (\Exception $e) {
+        // Manejar cualquier excepción y retornar un mensaje de error
+        return response()->json([
+            'status' => 500,
+            'message' => 'Error al obtener las facturas del usuario.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
 }
+
+}
+
+
